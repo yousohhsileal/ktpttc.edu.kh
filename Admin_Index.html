@@ -1,0 +1,2964 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTPTTC | Admin</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js for the graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --primary-light: #e7f1ff;
+            --secondary: #6c757d;
+            --success: #20c997;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #0dcaf0;
+            --dark: #212529;
+            --light: #f8f9fa;
+            
+            --bg-body: #f4f6f9;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            
+            --text-main: #333333;
+            --text-muted: #888888;
+            
+            --border-color: #eaedf1;
+            
+            --sidebar-width: 280px;
+            
+            --font-kh: 'Kantumruy Pro', sans-serif;
+            --font-en: 'Inter', sans-serif;
+        }
+
+        body.dark-mode {
+            --bg-body: #121212;
+            --bg-sidebar: #1e1e1e;
+            --bg-card: #1e1e1e;
+            --text-main: #f1f1f1;
+            --text-muted: #aaaaaa;
+            --border-color: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-kh), var(--font-en);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            overflow-x: hidden;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100vh;
+            background: var(--bg-body);
+        }
+        .login-card {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-card h2 { margin-bottom: 20px; font-weight: 600; }
+        
+        .form-label { display: block; text-align: left; margin-bottom: 8px; font-weight: 600; color: var(--text-main); }
+        .form-control { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; font-size: 1rem; outline: none; background: var(--bg-body); color: var(--text-main); font-family: inherit; }
+        .form-control:focus { border-color: var(--primary); }
+        textarea.form-control { resize: vertical; }
+        
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: inherit; transition: 0.2s; display: inline-block; text-align: center; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-primary:hover { background: #0b5ed7; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+        .btn-outline:hover { background: var(--bg-body); }
+        
+        .form-message { margin-top: 15px; font-size: 0.9rem; }
+        .form-message-error { color: var(--danger); }
+        .form-message-success { color: var(--success); }
+
+        /* Dashboard Layout */
+        .admin-layout { display: none; width: 100%; height: 100vh; }
+
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); height: 100%; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); z-index: 10; }
+        .sidebar-header { padding: 25px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border-color); }
+        .sidebar-header img { height: 50px; width: auto; object-fit: contain; }
+        .sidebar-logo-dark { display: none; }
+        body.dark-mode .sidebar-logo-light { display: none; }
+        body.dark-mode .sidebar-logo-dark { display: inline-block; }
+        .sidebar-header h3 { font-size: 1rem; font-weight: 700; line-height: 1.3; color: var(--text-main); }
+        .sidebar-title { padding: 25px 20px 10px; color: var(--primary); font-size: 1.2rem; font-weight: 700; }
+        
+        .sidebar-nav { flex: 1; padding: 10px 0; overflow-y: auto; }
+        .nav-item { padding: 12px 25px; display: flex; align-items: center; gap: 12px; color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: 0.2s; cursor: pointer; }
+        .nav-item i { width: 20px; text-align: center; font-size: 1.1rem; }
+        .nav-item:hover, .nav-item.active { color: var(--primary); background: var(--primary-light); border-right: 3px solid var(--primary); }
+        body.dark-mode .nav-item.active { background: rgba(13, 110, 253, 0.1); }
+        
+        .sidebar-footer { padding: 20px 30px 40px; }
+        .btn-logout { width: 100%; background: red; color: white; padding: 15px; border-radius: 30px; font-size: 1.1rem; border: none; cursor: pointer; font-family: inherit; font-weight: 600; }
+
+        /* Main Content */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-body); }
+        .topbar { height: 80px; background: var(--bg-sidebar); display: flex; justify-content: flex-end; align-items: center; padding: 0 30px; gap: 25px; border-bottom: 1px solid var(--border-color); }
+        .lang-switch { display: flex; align-items: center; background: var(--primary); border-radius: 20px; overflow: hidden; }
+        .lang-switch span { padding: 5px 12px; font-size: 0.85rem; color: white; cursor: pointer; font-weight: 600; }
+        .lang-switch span:not(.active) { background: #e0e0e0; color: #666; }
+        .top-icon { color: var(--text-main); font-size: 1.3rem; cursor: pointer; position: relative; }
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; position: relative; }
+        .user-profile .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; overflow: hidden; }
+        .user-profile span { font-weight: 600; color: var(--text-main); }
+        .profile-dropdown { position: absolute; top: 100%; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 220px; display: none; flex-direction: column; z-index: 1000; margin-top: 15px; overflow: hidden; }
+        .profile-dropdown.show { display: flex; animation: fadeIn 0.2s ease; }
+        .profile-dropdown-item { padding: 12px 20px; color: var(--text-main); text-decoration: none; font-size: 0.95rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; transition: 0.2s; cursor: pointer; }
+        .profile-dropdown-item:last-child { border-bottom: none; color: var(--danger); }
+        .profile-dropdown-item:hover { background: var(--bg-body); color: var(--primary); }
+        .profile-dropdown-item:last-child:hover { background: rgba(220, 53, 69, 0.1); color: var(--danger); }
+
+        /* View Containers */
+        .dashboard-container { padding: 30px; overflow-y: auto; flex: 1; }
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-title h1 { font-size: 1.4rem; font-weight: 700; }
+        .page-title p { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Stats & Dashboard */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--bg-card); border-radius: 12px; padding: 20px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid var(--border-color); }
+        .stat-icon { width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; margin-right: 15px; }
+        .icon-staff { background: #ffc107; }
+        .icon-book { background: #dc3545; }
+        .icon-msg { background: #28a745; }
+        .icon-member { background: #0d6efd; }
+        .stat-info { flex: 1; text-align: right; }
+        .stat-info p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+        .stat-info h3 { font-size: 1.8rem; font-weight: 700; color: var(--text-main); display: flex; justify-content: flex-end; align-items: baseline; gap: 5px; }
+        
+        .content-grid { display: grid; grid-template-columns: 1fr 300px; gap: 25px; margin-bottom: 30px; }
+        .chart-section { background: var(--bg-card); border-radius: 12px; padding: 25px; border: 1px solid var(--border-color); }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        .right-panel { display: flex; flex-direction: column; gap: 20px; }
+        .action-btn { width: 100%; padding: 20px; border-radius: 10px; border: none; color: white; font-weight: 600; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .action-btn.green { background: #20c997; }
+        .action-btn.blue { background: #0d6efd; }
+        
+        .calendar-card { background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.85rem; }
+        .cal-header { color: var(--text-muted); font-weight: 600; margin-bottom: 5px;}
+        .cal-day { padding: 5px; border-radius: 5px; }
+        .cal-day.active { background: #0d6efd; color: white; }
+
+        /* Bottom Lists */
+        .lists-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .list-card { background: var(--bg-card); border-radius: 12px; padding: 25px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .list-card h4 { margin-bottom: 20px; font-weight: 700; color: var(--text-main); font-size: 1.1rem; }
+        .data-item { display: flex; align-items: center; padding: 10px 15px; border: 1px solid rgba(13, 110, 253, 0.3); border-radius: 8px; margin-bottom: 12px; background-color: var(--bg-body); transition: 0.2s; cursor: pointer; }
+        .data-item:hover { background-color: var(--primary-light); border-color: var(--primary); }
+        .data-item .item-icon { width: 35px; height: 35px; border-radius: 8px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 1rem; }
+        .data-item .item-content { flex: 1; display: flex; justify-content: space-between; align-items: center; }
+        .data-item .item-title { font-weight: 600; font-size: 0.95rem; color: var(--text-main); margin-bottom: 2px; }
+        .data-item .item-subtitle { font-size: 0.8rem; color: var(--text-muted); }
+        .data-item:last-child { margin-bottom: 0; }
+
+
+        /* Tables */
+        .data-card { background: var(--bg-card); border-radius: 12px; padding: 25px; border: 1px solid var(--border-color); }
+        .table-responsive { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .data-table th { background: var(--bg-body); color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
+        .action-icons i { margin-right: 10px; cursor: pointer; transition: 0.2s; }
+        .action-icons i.fa-edit { color: var(--primary); }
+        .action-icons i.fa-trash { color: var(--danger); }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--bg-card); padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; animation: slideDown 0.3s ease; }
+        .modal-content.modal-lg { max-width: 800px; }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        .close-modal { cursor: pointer; font-size: 1.5rem; color: var(--text-muted); }
+        .close-modal:hover { color: var(--danger); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        /* Preview Images in Table */
+        .img-preview { width: 60px; height: 40px; object-fit: cover; border-radius: 5px; border: 1px solid var(--border-color); }
+        /* --- Beautiful Settings --- */
+        .settings-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            max-width: 1000px;
+        }
+        @media (min-width: 1024px) {
+            .settings-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .settings-card {
+            background: var(--bg-surface);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+        .settings-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--primary);
+            opacity: 0;
+            transition: var(--transition-normal);
+        }
+        .settings-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .settings-card:hover::before {
+            opacity: 1;
+        }
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        .settings-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .settings-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+        .settings-header p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .settings-footer {
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login View -->
+    <div id="login-view" class="login-screen">
+        <div class="login-card">
+            <h2>សូមបញ្ចូលលេខសម្ងាត់</h2>
+            <p class="text-muted" style="margin-bottom: 20px;">ដើម្បីចូលទៅកាន់ផ្ទាំងគ្រប់គ្រងទិន្នន័យ</p>
+            <form id="adminLoginForm">
+                <input type="password" id="adminPassword" class="form-control" placeholder="លេខសម្ងាត់ (Password)" required>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> ចូលប្រព័ន្ធ
+                </button>
+                <div id="login-message" class="form-message" style="display: none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Layout -->
+    <div id="admin-layout" class="admin-layout">
+        
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <img src="KTPTTC1.png" alt="KTPTTC Logo" class="sidebar-logo-light">
+                <img src="KTPTTC.png" alt="KTPTTC Logo" class="sidebar-logo-dark">
+            </div>
+            
+            <div class="sidebar-title" data-i18n="admin_title">ផ្ទាំងគ្រប់គ្រង</div>
+            
+            <div class="sidebar-nav">
+                <div class="nav-item active" onclick="switchView('view-dashboard', this)"><i class="fas fa-home"></i> <span data-i18n="dashboard">ផ្ទាំងដើម</span></div>
+                <div class="nav-item" onclick="switchView('view-library', this)"><i class="fas fa-book"></i> <span data-i18n="library">គ្រប់គ្រងបណ្ណាល័យ</span></div>
+                <div class="nav-item" onclick="switchView('view-news', this)"><i class="fas fa-newspaper"></i> <span data-i18n="news">គ្រប់គ្រងព័ត៌មាន</span></div>
+                <div class="nav-item" onclick="switchView('view-lessons', this)"><i class="fas fa-video"></i> <span data-i18n="lessons">គ្រប់គ្រងមេរៀន</span></div>
+                <div class="nav-item" onclick="switchView('view-messages', this)"><i class="fas fa-envelope-open-text"></i> <span data-i18n="messages">គ្រប់គ្រងការផ្ញើសារ</span></div>
+                <div class="nav-item" onclick="switchView('view-team', this)"><i class="fas fa-users"></i> <span data-i18n="team">គ្រប់គ្រងគណៈគ្រប់គ្រង</span></div>
+                <div class="nav-item" onclick="switchView('view-slides', this)"><i class="fas fa-images"></i> <span data-i18n="slides">គ្រប់គ្រងស្លាយផ្សព្វផ្សាយ</span></div>
+                <div class="nav-item" onclick="switchView('view-structure', this)"><i class="fas fa-sitemap"></i> <span data-i18n="structure">គ្រប់គ្រងរចនាសម្ព័ន្ធថ្នាក់សាលា</span></div>
+                <div class="nav-item" onclick="switchView('view-gallery', this)"><i class="fas fa-camera"></i> <span data-i18n="gallery">គ្រប់គ្រងរូបភាព</span></div>
+                <div class="nav-item" onclick="switchView('view-settings', this)"><i class="fas fa-cog"></i> <span data-i18n="settings">ការកំណត់</span></div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="adminLogout()"><span data-i18n="logout">ចាកចេញ</span></button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Topbar -->
+            <div class="topbar">
+                <div class="lang-switch" id="langSwitch" onclick="toggleLanguage()">
+                    <span class="active"><img src="https://flagcdn.com/w20/kh.png" alt="Khmer" style="width: 15px; margin-right: 5px; vertical-align: middle;"></span>
+                    <span>ENG</span>
+                </div>
+                <i class="fas fa-toggle-on top-icon" style="color: #fd7e14;" onclick="document.body.classList.toggle('dark-mode')"></i>
+                <i class="fas fa-envelope top-icon" style="color: #0d6efd;" title="គ្រប់គ្រងការផ្ញើសារ" onclick="switchView('view-messages', document.querySelector('.sidebar-nav .nav-item:nth-child(5)'))"></i>
+                <div class="notification-wrapper" onclick="toggleNotificationDropdown(event)" style="position: relative; cursor: pointer; display: flex; align-items: center;">
+                    <i class="fas fa-bell top-icon" style="color: #0d6efd;"></i>
+                    <span class="badge notification-badge" style="position: absolute; top: -5px; right: -8px; background: var(--danger); color: white; border-radius: 50%; padding: 2px 5px; font-size: 0.65rem; font-weight: bold; border: 2px solid var(--bg-body); display: none;">0</span>
+                    <div class="profile-dropdown" id="notificationDropdown" style="width: 300px; padding-top: 10px; max-height: 380px; overflow-y: auto;">
+                        <h4 style="margin: 0 20px 10px 20px; font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: var(--text-main);">សេចក្តីជូនដំណឹង</h4>
+                        <div id="notificationDropdownItems">
+                            <div style="padding: 15px 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">គ្មានសារថ្មីទេ</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-profile" onclick="toggleProfileDropdown(event)">
+                    <div class="avatar" id="topbarAdminAvatar"><i class="far fa-user"></i></div>
+                    <span id="topbarAdminName">Admin <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-left: 5px; color: var(--primary);"></i></span>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="profile-dropdown-item" onclick="event.stopPropagation(); openEditProfileModal(); toggleProfileDropdown();"><i class="fas fa-user-edit"></i> កែប្រែប្រវត្តិរូប (Edit Profile)</div>
+                        <div class="profile-dropdown-item" onclick="event.stopPropagation(); switchView('view-settings', document.querySelector('.nav-item:nth-child(9)')); toggleProfileDropdown();"><i class="fas fa-cog"></i> ការកំណត់គណនី</div>
+                        <div class="profile-dropdown-item" onclick="event.stopPropagation(); adminLogout()"><i class="fas fa-sign-out-alt"></i> ចាកចេញពីគណនី</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Container -->
+            <div class="dashboard-container">
+                
+                <!-- 1. Dashboard View -->
+                <div id="view-dashboard" class="view-section active">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h1>Welcome To Dashboard</h1>
+                            <p>Admin Dashboard Overview</p>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-icon icon-staff"><i class="fas fa-globe"></i></div><div class="stat-info"><p>ចំនួនអ្នកចូលមើលវេបសាយ</p><h3><span id="stat-staff" style="color: #ffc107;">0</span> <span>នាក់</span></h3></div></div>
+                        <div class="stat-card"><div class="stat-icon icon-book"><i class="fas fa-book-open"></i></div><div class="stat-info"><p>ចំនួនសៀវភៅ</p><h3><span id="stat-book" style="color: #dc3545;">1204</span> <span>ក្បាល</span></h3></div></div>
+                        <div class="stat-card"><div class="stat-icon icon-msg"><i class="fas fa-envelope"></i></div><div class="stat-info"><p>សារបញ្ញើចូល</p><h3><span id="stat-msg" style="color: #28a745;">12</span> <span>សារ</span></h3></div></div>
+                        <div class="stat-card"><div class="stat-icon icon-member"><i class="fas fa-video"></i></div><div class="stat-info"><p>ចំនួនមេរៀនវីដេអូ</p><h3><span id="stat-member" style="color: #0d6efd;">0</span> <span>វីដេអូ</span></h3></div></div>
+                    </div>
+                    <div class="content-grid">
+                        <div class="chart-section">
+                            <div class="chart-header">
+                                <h3>ស្ថិតិរាយការណ៍</h3>
+                                <div class="chart-filters"><span class="active">ថ្ងៃនេះ</span><span>សប្តាហ៍មុន</span><span>ខែមុន</span></div>
+                            </div>
+                            <div style="height: 250px; width: 100%;"><canvas id="statsChart"></canvas></div>
+                        </div>
+                        <div class="right-panel">
+                            <button class="action-btn green" onclick="openModal('modal-add-book')">ADD NEW BOOK</button>
+                            <button class="action-btn blue" onclick="openModal('modal-add-lesson')">ADD NEW VIDEO</button>
+                            <div class="calendar-card">
+                                <h4>ប្រតិទិន</h4>
+                                <div class="cal-grid cal-header"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
+                                <div class="cal-grid" id="calendar-days"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Lists -->
+                    <div class="lists-grid">
+                        <div class="list-card">
+                            <h4>សារបញ្ញើចូលថ្មីៗ</h4>
+                            <div id="dashboard-recent-messages">
+                                <div style="text-align:center; color:var(--text-muted); padding:20px;">កំពុងទាញយក...</div>
+                            </div>
+                            <button class="btn btn-outline" style="width:100%; margin-top:10px; padding:10px;" onclick="switchView('view-messages', document.querySelector('.nav-item:nth-child(5)'))">មើលសារទាំងអស់</button>
+                        </div>
+                        
+                        <div class="list-card">
+                            <h4>សៀវភៅថ្មីៗ</h4>
+                            <div id="dashboard-recent-books">
+                                <div style="text-align:center; color:var(--text-muted); padding:20px;">កំពុងទាញយក...</div>
+                            </div>
+                            <button class="btn btn-outline" style="width:100%; margin-top:10px; padding:10px;" onclick="switchView('view-library', document.querySelector('.nav-item:nth-child(2)'))">មើលសៀវភៅទាំងអស់</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Library Management -->
+                <div id="view-library" class="view-section">
+                    <div class="page-header">
+                        <div class="page-title"><h1>គ្រប់គ្រងបណ្ណាល័យ</h1><p>បញ្ជីសៀវភៅទាំងអស់</p></div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-outline" style="width: auto;" onclick="openCategoryModal()"><i class="fas fa-tags"></i> គ្រប់គ្រងប្រភេទសៀវភៅ</button>
+                            <button class="btn btn-primary" style="width: auto;" onclick="openModal('modal-add-book')"><i class="fas fa-plus"></i> បន្ថែមសៀវភៅថ្មី</button>
+                        </div>
+                    </div>
+                    <div class="data-card"><div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>គម្រប</th><th>កូដ</th><th>ចំណងជើង</th><th>អ្នកនិពន្ធ</th><th>ប្រភេទ</th><th>សកម្មភាព</th></tr></thead>
+                            <tbody id="admin-books-table-body">
+                                <tr><td colspan="6" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                            </tbody>
+                        </table>
+                    </div></div>
+                </div>
+
+                <!-- 3. News Management -->
+                <div id="view-news" class="view-section">
+                    <div class="page-header">
+                        <div class="page-title"><h1>គ្រប់គ្រងព័ត៌មាន</h1><p>បញ្ជីព័ត៌មាន និងព្រឹត្តិការណ៍</p></div>
+                        <button class="btn btn-primary" style="width: auto;" onclick="openModal('modal-add-news')"><i class="fas fa-plus"></i> បន្ថែមព័ត៌មានថ្មី</button>
+                    </div>
+                    <div class="data-card"><div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>រូបភាព</th><th>កាលបរិច្ឆេទ</th><th>ចំណងជើង</th><th>សកម្មភាព</th></tr></thead>
+                            <tbody id="admin-news-table-body">
+                                <tr><td colspan="4" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                            </tbody>
+                        </table>
+                    </div></div>
+                </div>
+
+                <!-- 4. Lessons Management -->
+                <div id="view-lessons" class="view-section">
+                    <div class="page-header">
+                        <div class="page-title"><h1>គ្រប់គ្រងមេរៀន</h1><p>បញ្ជីវីដេអូមេរៀន e-Learning</p></div>
+                        <button class="btn btn-primary" style="width: auto;" onclick="openModal('modal-add-lesson')"><i class="fas fa-plus"></i> បន្ថែមមេរៀនថ្មី</button>
+                    </div>
+                    <div class="data-card"><div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>មុខវិជ្ជា</th><th>ចំណងជើងមេរៀន</th><th>គ្រូបង្រៀន</th><th>សកម្មភាព</th></tr></thead>
+                            <tbody id="video-table-body">
+                                <tr><td colspan="4" style="text-align:center;">មិនមានទិន្នន័យទេ</td></tr>
+                            </tbody>
+                        </table>
+                    </div></div>
+                </div>
+
+                <!-- 5. Message Management -->
+                <div id="view-messages" class="view-section">
+                    <div class="page-header">
+                        <div class="page-title"><h1>គ្រប់គ្រងការផ្ញើសារ</h1><p>បញ្ជីសារទំនាក់ទំនង និងការផ្ញើសារចេញ</p></div>
+                        <button class="btn btn-primary" style="width: auto;" onclick="openModal('modal-send-message')"><i class="fas fa-paper-plane"></i> ផ្ញើសារថ្មី</button>
+                    </div>
+                    <div class="data-card"><div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>កាលបរិច្ឆេទ</th><th>ឈ្មោះ/អ្នកផ្ញើ</th><th>ប្រធានបទ</th><th>ស្ថានភាព</th><th>សកម្មភាព</th></tr></thead>
+                            <tbody id="messages-table-body">
+                                <tr><td colspan="5" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                            </tbody>
+                        </table>
+                    </div></div>
+                </div>
+                <!-- Team Management -->
+                <div id="view-team" class="view-section">
+                    <div class="page-header">
+                        <div class="page-title"><h1>គ្រប់គ្រងគណៈគ្រប់គ្រង</h1><p>បញ្ជីឈ្មោះ និងតួនាទីថ្នាក់ដឹកនាំ</p></div>
+                        <button class="btn btn-primary" style="width: auto;" onclick="openModal('modal-add-team')"><i class="fas fa-plus"></i> បន្ថែមសមាជិកថ្មី</button>
+                    </div>
+                    <div class="data-card"><div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>រូបថត</th><th>ឈ្មោះ</th><th>តួនាទី</th><th>ការពិពណ៌នា</th><th>សកម្មភាព</th></tr></thead>
+                            <tbody id="team-table-body">
+                                <tr><td colspan="5" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                            </tbody>
+                        </table>
+                    </div></div>
+                </div>
+
+                <!-- 6. Slide Management -->
+                <div id="view-slides" class="view-section">
+                    <div class="page-header">
+                        <div class="page-title"><h1>គ្រប់គ្រងស្លាយផ្សព្វផ្សាយ</h1><p>កំណត់រូបភាពសម្រាប់ Slide នៅទំព័រដើម</p></div>
+                        <button class="btn btn-primary" style="width: auto;" onclick="openModal('modal-add-slide')"><i class="fas fa-plus"></i> បន្ថែមស្លាយថ្មី</button>
+                    </div>
+                    <div class="data-card"><div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>រូបភាព</th><th>ចំណងជើង</th><th>តំណភ្ជាប់ (Link)</th><th>សកម្មភាព</th></tr></thead>
+                            <tbody id="slide-table-body">
+                                <tr><td colspan="4" style="text-align:center;">មិនមានទិន្នន័យទេ</td></tr>
+                            </tbody>
+                        </table>
+                    </div></div>
+                </div>
+
+                <!-- 7. School Structure Management -->
+                <div id="view-structure" class="view-section">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h1>គ្រប់គ្រងរចនាសម្ព័ន្ធថ្នាក់សាលា</h1>
+                            <p>រៀបចំរចនាសម្ព័ន្ធគណៈគ្រប់គ្រង និងឋានានុក្រមសាលា (School Organizational Structure)</p>
+                        </div>
+                        <button class="btn btn-primary" style="width: auto;" onclick="openModal('modal-add-structure')"><i class="fas fa-plus"></i> បន្ថែមសមាជិកថ្មី</button>
+                    </div>
+
+                    <!-- Live Structure Chart Preview in Admin -->
+                    <div class="data-card" style="margin-bottom: 25px;">
+                        <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; color: var(--text-main);">
+                            <i class="fas fa-sitemap" style="color: var(--primary);"></i> ការមើលគំរូដើមរចនាសម្ព័ន្ធ (Live Structure Preview)
+                        </h3>
+                        <div id="admin-structure-preview" style="padding: 20px 10px; background: #0f172a; border-radius: 12px; overflow-x: auto; text-align: center; border: 1px solid rgba(255,255,255,0.08);">
+                            <p style="color: #94a3b8; font-size: 0.9rem;">កំពុងផ្ទុកទិន្នន័យ...</p>
+                        </div>
+                    </div>
+
+                    <!-- Structure Management Table -->
+                    <div class="data-card">
+                        <h3 style="margin-bottom: 15px; font-size: 1.1rem; color: var(--text-main);"><i class="fas fa-list"></i> បញ្ជីសមាជិករចនាសម្ព័ន្ធ</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 70px;">រូបភាព</th>
+                                        <th>ឈ្មោះ</th>
+                                        <th>តួនាទី</th>
+                                        <th>កម្រិតឋានានុក្រម</th>
+                                        <th>ផ្នែក/ការិយាល័យ</th>
+                                        <th style="width: 80px; text-align: center;">លំដាប់</th>
+                                        <th style="width: 100px; text-align: center;">សកម្មភាព</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="structure-table-body">
+                                    <tr><td colspan="7" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. Gallery Management -->
+                <div id="view-gallery" class="view-section">
+                    <div class="page-header">
+                        <div class="page-title"><h1>គ្រប់គ្រងរូបភាព</h1><p>បណ្តុំរូបភាពសកម្មភាពផ្សេងៗរបស់សាលា</p></div>
+                        <button class="btn btn-primary" style="width: auto;" onclick="openModal('modal-add-gallery')"><i class="fas fa-plus"></i> បន្ថែមរូបភាពថ្មី</button>
+                    </div>
+                    <div class="data-card"><div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>រូបភាព</th><th>ព្រឹត្តិការណ៍/ចំណងជើង</th><th>កាលបរិច្ឆេទ</th><th>សកម្មភាព</th></tr></thead>
+                            <tbody id="gallery-table-body">
+                                <tr><td colspan="4" style="text-align:center;">មិនមានទិន្នន័យទេ</td></tr>
+                            </tbody>
+                        </table>
+                    </div></div>
+                </div>
+
+                <!-- 9. Settings -->
+                <div id="view-settings" class="view-section">
+                    <div class="page-header"><div class="page-title"><h1>ការកំណត់ (Settings)</h1><p>កំណត់រចនាសម្ព័ន្ធ និងព័ត៌មានទូទៅនៃប្រព័ន្ធ</p></div></div>
+                    
+                    <div class="settings-container">
+                        <!-- General Settings -->
+                        <div class="settings-card">
+                            <div class="settings-header">
+                                <div class="settings-icon"><i class="fas fa-school"></i></div>
+                                <div>
+                                    <h3>ការកំណត់ទូទៅ (General)</h3>
+                                    <p>កំណត់ឈ្មោះ និងព័ត៌មានមូលដ្ឋានសាលា</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ឈ្មោះសាលា (School Name)</label>
+                                <div style="position: relative;">
+                                    <i class="fas fa-building" style="position: absolute; left: 15px; top: 12px; color: var(--text-muted);"></i>
+                                    <input type="text" id="settingSchoolName" class="form-control" placeholder="ឧ. សាលាគរុកោសល្យ" style="padding-left: 45px;">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label class="form-label"><i class="fas fa-map-marked-alt" style="color: var(--danger); margin-right: 5px;"></i> តំណភ្ជាប់ Google Maps (Google Maps Link)</label>
+                                <div style="position: relative;">
+                                    <i class="fas fa-map-pin" style="position: absolute; left: 15px; top: 12px; color: var(--text-muted);"></i>
+                                    <input type="text" id="settingMapUrl" class="form-control" placeholder="https://maps.app.goo.gl/..." style="padding-left: 45px;">
+                                </div>
+                            </div>
+                            <div class="settings-footer">
+                                <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save" style="margin-right:8px;"></i>រក្សាទុកការផ្លាស់ប្តូរ</button>
+                                <span id="save-setting-msg" style="color: var(--success); display: none; font-size: 0.9rem;"><i class="fas fa-check-circle"></i> បានរក្សាទុក!</span>
+                            </div>
+                        </div>
+
+                        <!-- Admin Profile Settings -->
+                        <div class="settings-card" style="margin-top: 25px;">
+                            <div class="settings-header">
+                                <div class="settings-icon" style="background: rgba(13, 110, 253, 0.1); color: var(--primary);"><i class="fas fa-user-circle"></i></div>
+                                <div>
+                                    <h3>ប្រវត្តិរូប Admin (Admin Profile)</h3>
+                                    <p>ផ្លាស់ប្តូរឈ្មោះ និងរូបភាព Profile របស់អ្នកគ្រប់គ្រង</p>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+                                <div id="settingProfileAvatarWrap" style="width: 70px; height: 70px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; background: var(--bg-card-secondary);">
+                                    <img id="settingProfileAvatarImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;" referrerpolicy="no-referrer">
+                                    <i id="settingProfileAvatarIcon" class="far fa-user" style="font-size: 2rem; color: var(--primary);"></i>
+                                </div>
+                                <div style="flex: 1; min-width: 200px;">
+                                    <div class="form-group">
+                                        <label class="form-label">ឈ្មោះ Admin (Admin Name)</label>
+                                        <input type="text" id="settingAdminName" class="form-control" placeholder="Admin">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label"><i class="fas fa-link" style="color: var(--primary); margin-right: 5px;"></i> តំណភ្ជាប់រូបភាព Profile (Avatar Image URL)</label>
+                                <input type="text" id="settingAdminAvatar" class="form-control" placeholder="https://..." oninput="updateAdminSettingAvatarPreview(this.value)">
+                            </div>
+
+                            <div class="settings-footer">
+                                <button class="btn btn-primary" onclick="saveAdminProfileFromSettings()"><i class="fas fa-save" style="margin-right:8px;"></i>រក្សាទុកការផ្លាស់ប្តូរ</button>
+                                <span id="save-setting-msg-profile" style="color: var(--success); display: none; font-size: 0.9rem;"><i class="fas fa-check-circle"></i> បានរក្សាទុក!</span>
+                            </div>
+                        </div>
+
+                        <!-- Vision, Mission & Core Values Settings -->
+                        <div class="settings-card" style="margin-top: 25px;">
+                            <div class="settings-header">
+                                <div class="settings-icon" style="background: rgba(13, 110, 253, 0.1); color: var(--primary);"><i class="fas fa-compass"></i></div>
+                                <div>
+                                    <h3>គ្រប់គ្រង ចក្ខុវិស័យ បេសកកម្ម និងតម្លៃជាស្នូល</h3>
+                                    <p>កំណត់ខ្លឹមសារចក្ខុវិស័យ បេសកកម្ម និងតម្លៃជាស្នូលរបស់សាលា</p>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label"><i class="fas fa-eye" style="color: var(--primary); margin-right: 5px;"></i> ចក្ខុវិស័យ (Vision)</label>
+                                <textarea id="settingVision" class="form-control" rows="3" placeholder="បញ្ចូលខ្លឹមសារចក្ខុវិស័យ..."></textarea>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label class="form-label"><i class="fas fa-bullseye" style="color: var(--danger); margin-right: 5px;"></i> បេសកកម្ម (Mission)</label>
+                                <textarea id="settingMission" class="form-control" rows="3" placeholder="បញ្ចូលខ្លឹមសារបេសកកម្ម..."></textarea>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label class="form-label"><i class="fas fa-gem" style="color: #ffc107; margin-right: 5px;"></i> តម្លៃជាស្នូល / គុណតម្លៃស្នូល (Core Values)</label>
+                                <textarea id="settingValues" class="form-control" rows="3" placeholder="បញ្ចូលខ្លឹមសារតម្លៃជាស្នូល..."></textarea>
+                            </div>
+
+                            <div class="settings-footer">
+                                <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save" style="margin-right:8px;"></i>រក្សាទុកការផ្លាស់ប្តូរ</button>
+                                <span id="save-setting-msg-vm" style="color: var(--success); display: none; font-size: 0.9rem;"><i class="fas fa-check-circle"></i> បានរក្សាទុក!</span>
+                            </div>
+                        </div>
+
+                        <!-- School History Settings -->
+                        <div class="settings-card" style="margin-top: 25px;">
+                            <div class="settings-header">
+                                <div class="settings-icon" style="background: rgba(40, 167, 69, 0.1); color: var(--success);"><i class="fas fa-history"></i></div>
+                                <div>
+                                    <h3>គ្រប់គ្រងប្រវត្តិសាលា (School History)</h3>
+                                    <p>កំណត់ខ្លឹមសារប្រវត្តិសាលា និងរូបភាព</p>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label"><i class="fas fa-paragraph" style="color: var(--primary); margin-right: 5px;"></i> ប្រវត្តិសាលា វគ្គទី១ (Paragraph 1)</label>
+                                <textarea id="settingHistoryP1" class="form-control" rows="3" placeholder="បញ្ចូលប្រវត្តិសាលា វគ្គទី១..."></textarea>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label class="form-label"><i class="fas fa-paragraph" style="color: var(--primary); margin-right: 5px;"></i> ប្រវត្តិសាលា វគ្គទី២ (Paragraph 2)</label>
+                                <textarea id="settingHistoryP2" class="form-control" rows="3" placeholder="បញ្ចូលប្រវត្តិសាលា វគ្គទី២..."></textarea>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label class="form-label"><i class="fas fa-image" style="color: #0d6efd; margin-right: 5px;"></i> តំណភ្ជាប់រូបភាពប្រវត្តិសាលា (History Image URL)</label>
+                                <div style="position: relative;">
+                                    <i class="fas fa-link" style="position: absolute; left: 15px; top: 12px; color: var(--text-muted);"></i>
+                                    <input type="text" id="settingHistoryImage" class="form-control" placeholder="https://..." style="padding-left: 45px;" oninput="updateHistoryImgPreview(this.value)">
+                                </div>
+                                <div id="historyImgPreviewWrap" style="margin-top: 10px; max-width: 320px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); display: none;">
+                                    <img id="historyImgPreview" src="" style="width: 100%; height: 180px; object-fit: cover;" referrerpolicy="no-referrer" onerror="this.parentElement.style.display='none'">
+                                </div>
+                            </div>
+
+                            <div class="settings-footer">
+                                <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save" style="margin-right:8px;"></i>រក្សាទុកការផ្លាស់ប្តូរ</button>
+                                <span id="save-setting-msg-history" style="color: var(--success); display: none; font-size: 0.9rem;"><i class="fas fa-check-circle"></i> បានរក្សាទុក!</span>
+                            </div>
+                        </div>
+
+                        <!-- Security Settings -->
+                        <div class="settings-card">
+                            <div class="settings-header">
+                                <div class="settings-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);"><i class="fas fa-shield-alt"></i></div>
+                                <div>
+                                    <h3>សុវត្ថិភាព (Security)</h3>
+                                    <p>ផ្លាស់ប្តូរលេខសម្ងាត់សម្រាប់ Admin</p>
+                                </div>
+                            </div>
+                            <form id="changePasswordForm" onsubmit="changeAdminPassword(event)">
+                                <div class="form-group">
+                                    <label class="form-label">លេខសម្ងាត់ចាស់ (Current Password) *</label>
+                                    <div style="position: relative;">
+                                        <i class="fas fa-lock" style="position: absolute; left: 15px; top: 12px; color: var(--text-muted);"></i>
+                                        <input type="password" id="currentPasswordInput" class="form-control" placeholder="••••••••" style="padding-left: 45px;" required>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-top: 15px;">
+                                    <label class="form-label">លេខសម្ងាត់ថ្មី (New Password) *</label>
+                                    <div style="position: relative;">
+                                        <i class="fas fa-key" style="position: absolute; left: 15px; top: 12px; color: var(--text-muted);"></i>
+                                        <input type="password" id="newPasswordInput" class="form-control" placeholder="••••••••" style="padding-left: 45px;" required minlength="4">
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-top: 15px;">
+                                    <label class="form-label">បញ្ជាក់លេខសម្ងាត់ថ្មី (Confirm New Password) *</label>
+                                    <div style="position: relative;">
+                                        <i class="fas fa-check-circle" style="position: absolute; left: 15px; top: 12px; color: var(--text-muted);"></i>
+                                        <input type="password" id="confirmPasswordInput" class="form-control" placeholder="••••••••" style="padding-left: 45px;" required minlength="4">
+                                    </div>
+                                </div>
+                                <div id="change-pwd-msg" style="margin-top: 15px; display: none; font-size: 0.9rem; font-weight: 600;"></div>
+                                <div class="settings-footer" style="margin-top: 20px;">
+                                    <button type="submit" id="btnChangePassword" class="btn btn-primary" style="background: var(--danger); border-color: var(--danger);"><i class="fas fa-lock" style="margin-right:8px;"></i>ប្តូរលេខសម្ងាត់</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- UI Settings (Mock) -->
+                        <div class="settings-card">
+                            <div class="settings-header">
+                                <div class="settings-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--accent);"><i class="fas fa-paint-roller"></i></div>
+                                <div>
+                                    <h3>រូបរាង (Appearance)</h3>
+                                    <p>ប្ដូររូបរាងផ្ទៃអេក្រង់ Admin</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Theme Mode</label>
+                                <select class="form-control" onchange="if(this.value === 'dark' && !document.body.classList.contains('dark-mode')) toggleDarkMode(); else if (this.value === 'light' && document.body.classList.contains('dark-mode')) toggleDarkMode();">
+                                    <option value="light">Light Mode (ពន្លឺ)</option>
+                                    <option value="dark">Dark Mode (ងងឹត)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODALS -->
+
+    <div id="modal-add-book" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>បន្ថែមសៀវភៅថ្មី</h3>
+                <i class="fas fa-times close-modal" onclick="closeModal('modal-add-book')"></i>
+            </div>
+            <form id="addBookForm" onsubmit="saveNewBook(event)">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">កូដសៀវភៅ (ស្វ័យប្រវត្តិ)</label>
+                        <input type="text" id="bookCodeInput" class="form-control" readonly style="background-color: #e9ecef; cursor: not-allowed;" required>
+                    </div>
+                    <div>
+                        <label class="form-label">ប្រភេទ</label>
+                        <select id="bookCategoryInput" class="form-control" required>
+                            <option value="">ជ្រើសរើសប្រភេទ...</option>
+                            <option value="សៀវភៅសិក្សាគោល">សៀវភៅសិក្សាគោល</option>
+                            <option value="សៀវភៅកិច្ចតែងការបង្រៀន">សៀវភៅកិច្ចតែងការបង្រៀន</option>
+                            <option value="សៀវភៅចំណេះដឹងទូទៅ">សៀវភៅចំណេះដឹងទូទៅ</option>
+                            <option value="ស្រាវជ្រាវ">ស្រាវជ្រាវ</option>
+                            <option value="សៀវភៅបច្ចេកវិទ្យា">សៀវភៅបច្ចេកវិទ្យា</option>
+                            <option value="សៀវភៅវិធីសាស្ត្របង្រៀន">សៀវភៅវិធីសាស្ត្របង្រៀន</option>
+                            <option value="ផ្សេងៗ">ផ្សេងៗ</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">ចំណងជើងសៀវភៅ</label>
+                        <input type="text" id="bookTitleInput" class="form-control" required>
+                    </div>
+                    <div>
+                        <label class="form-label">កម្រិតថ្នាក់</label>
+                        <select id="bookGradeInput" class="form-control">
+                            <option value="">ជ្រើសរើសកម្រិតថ្នាក់...</option>
+                            <option value="ថ្នាក់ទី១-១២">ថ្នាក់ទី១-១២</option>
+                            <option value="១២+២">១២+២</option>
+                            <option value="១២+៤">១២+៤</option>
+                            <option value="បរិញ្ញាបត្រ+១">បរិញ្ញាបត្រ+១</option>
+                            <option value="ផ្សេងៗ">ផ្សេងៗ</option>
+                        </select>
+                    </div>
+                </div>
+                <label class="form-label">អ្នកនិពន្ធ</label>
+                <input type="text" id="bookAuthorInput" class="form-control">
+                <label class="form-label">តំណភ្ជាប់ (PDF/Drive URL)</label>
+                <input type="url" id="bookUrlInput" class="form-control">
+                <label class="form-label">តំណភ្ជាប់រូបភាពក្របសៀវភៅ (Cover Image URL)</label>
+                <input type="url" id="bookCoverInput" class="form-control">
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-add-book')">បោះបង់</button>
+                    <button type="submit" class="btn btn-success" style="width:auto;">រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="modal-add-news" class="modal"><div class="modal-content modal-lg"><div class="modal-header"><h3>បន្ថែមព័ត៌មានថ្មី</h3><i class="fas fa-times close-modal" onclick="closeModal('modal-add-news')"></i></div><form id="addNewsForm" onsubmit="saveNewNews(event)"><label class="form-label">ចំណងជើង</label><input type="text" id="newsTitleInput" class="form-control" required><label class="form-label">តំណភ្ជាប់រូបភាព (Image URL)</label><input type="url" id="newsUrlInput" class="form-control" required><label class="form-label">ខ្លឹមសារ</label><textarea id="newsContentInput" class="form-control" rows="5"></textarea><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;"><button type="button" class="btn btn-outline" onclick="closeModal('modal-add-news')">បោះបង់</button><button type="submit" class="btn btn-success" style="width:auto;">បង្ហោះ</button></div></form></div></div>
+
+    <div id="modal-add-lesson" class="modal"><div class="modal-content"><div class="modal-header"><h3>បន្ថែមវីដេអូមេរៀនថ្មី</h3><i class="fas fa-times close-modal" onclick="closeModal('modal-add-lesson')"></i></div><form id="addVideoForm" onsubmit="saveNewVideo(event)"><label class="form-label">មុខវិជ្ជា</label><input type="text" id="videoSubjectInput" class="form-control" required><label class="form-label">ចំណងជើងមេរៀន</label><input type="text" id="videoTitleInput" class="form-control" required><label class="form-label">គ្រូបង្រៀន</label><input type="text" id="videoTeacherInput" class="form-control" required><label class="form-label">តំណភ្ជាប់វីដេអូ (YouTube URL)</label><input type="text" id="videoLinkInput" class="form-control" required><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;"><button type="button" class="btn btn-outline" onclick="closeModal('modal-add-lesson')">បោះបង់</button><button type="submit" class="btn btn-success" style="width:auto;">រក្សាទុក</button></div></form></div></div>
+
+    <!-- Modals for new features -->
+    <div id="modal-manage-categories" class="modal">
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <h3><i class="fas fa-tags" style="color:var(--primary); margin-right:8px;"></i> គ្រប់គ្រងប្រភេទសៀវភៅ</h3>
+                <i class="fas fa-times close-modal" onclick="closeModal('modal-manage-categories')"></i>
+            </div>
+            <form id="addCategoryForm" onsubmit="saveNewCategory(event)" style="margin-bottom: 20px;">
+                <label class="form-label">បន្ថែមប្រភេទថ្មី</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newCategoryInput" class="form-control" placeholder="ឈ្មោះប្រភេទ (ឧ. សៀវភៅប្រវត្តិវិទ្យា)" required style="margin-bottom: 0;">
+                    <button type="submit" class="btn btn-success" style="width: auto; white-space: nowrap;"><i class="fas fa-plus"></i> បន្ថែម</button>
+                </div>
+            </form>
+            <div>
+                <h4 style="margin-bottom: 10px; font-size: 0.95rem; color: var(--text-main);">បញ្ជីប្រភេទសៀវភៅបច្ចុប្បន្ន</h4>
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table class="data-table">
+                        <thead><tr><th>ឈ្មោះប្រភេទ</th><th>ចំនួនសៀវភៅ</th><th>សកម្មភាព</th></tr></thead>
+                        <tbody id="category-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-view-message" class="modal">
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <h3><i class="fas fa-envelope-open-text" style="color:var(--primary); margin-right:8px;"></i> ព័ត៌មានលម្អិតនៃសារ</h3>
+                <i class="fas fa-times close-modal" onclick="closeModal('modal-view-message')"></i>
+            </div>
+            <div style="padding: 10px 0;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+                    <div>
+                        <h4 id="viewMsgSender" style="margin:0 0 5px 0; color:var(--text-main);"></h4>
+                        <span id="viewMsgContact" style="font-size:0.85rem; color:var(--text-muted);"></span>
+                    </div>
+                    <div style="text-align:right;">
+                        <span id="viewMsgDate" style="font-size:0.85rem; color:var(--text-muted);"></span>
+                    </div>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label class="form-label" style="font-size:0.8rem; color:var(--text-muted);">ប្រធានបទ៖</label>
+                    <div id="viewMsgSubject" style="font-weight:600; font-size:1rem; color:var(--text-main);"></div>
+                </div>
+                <div>
+                    <label class="form-label" style="font-size:0.8rem; color:var(--text-muted);">ខ្លឹមសារ៖</label>
+                    <div id="viewMsgContent" style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-color); white-space:pre-wrap; line-height:1.6; color:var(--text-main); font-size:0.95rem;"></div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                <button type="button" class="btn btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="deleteCurrentViewedMessage()"><i class="fas fa-trash"></i> លុបសារ</button>
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-view-message')">បិទ</button>
+                    <button type="button" class="btn btn-primary" onclick="replyCurrentMessage()"><i class="fas fa-reply"></i> ឆ្លើយតប</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-send-message" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-paper-plane" style="color:var(--primary); margin-right:8px;"></i> ផ្ញើសារថ្មី</h3>
+                <i class="fas fa-times close-modal" onclick="closeModal('modal-send-message')"></i>
+            </div>
+            <form id="sendMessageForm" onsubmit="sendAdminMessage(event)">
+                <label class="form-label">អ្នកទទួល (Email / លេខទូរស័ព្ទ ឬ ឈ្មោះ)</label>
+                <input type="text" id="msgRecipientInput" class="form-control" required placeholder="ឧ. 012 345 678 ឬ user@example.com">
+                <label class="form-label">ប្រធានបទ</label>
+                <input type="text" id="msgSubjectInput" class="form-control" required placeholder="ប្រធានបទនៃសារ">
+                <label class="form-label">ខ្លឹមសារសារ</label>
+                <textarea id="msgContentInput" class="form-control" rows="4" required placeholder="សរសេរខ្លឹមសារសារនៅទីនេះ..."></textarea>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-send-message')">បោះបង់</button>
+                    <button type="submit" id="btn-send-message" class="btn btn-success" style="width:auto;"><i class="fas fa-paper-plane"></i> ផ្ញើ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-add-slide" class="modal"><div class="modal-content"><div class="modal-header"><h3>បន្ថែមស្លាយផ្សព្វផ្សាយថ្មី</h3><i class="fas fa-times close-modal" onclick="closeModal('modal-add-slide')"></i></div><form id="addSlideForm" onsubmit="saveNewSlide(event)"><label class="form-label">ចំណងជើង</label><input type="text" id="slideTitleInput" class="form-control" placeholder="ឧ. ស្វាគមន៍ឆ្នាំសិក្សាថ្មី" required><label class="form-label">តំណភ្ជាប់រូបភាព (Image URL / Google Drive)</label><input type="url" id="slideImageInput" class="form-control" placeholder="https://..." required><small style="color:var(--text-muted); display:block; margin-top:-5px; margin-bottom:12px;"><i class="fas fa-info-circle"></i> ទំហំរូបភាពណែនាំ៖ <strong>1920 x 600 px</strong></small><label class="form-label">តំណភ្ជាប់ទំព័រគោលដៅ (Target URL - ជម្រើស)</label><input type="url" id="slideTargetInput" class="form-control" placeholder="https://..."><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;"><button type="button" class="btn btn-outline" onclick="closeModal('modal-add-slide')">បោះបង់</button><button type="submit" class="btn btn-success" style="width:auto;"><i class="fas fa-save"></i> រក្សាទុក</button></div></form></div></div>
+    
+    <div id="modal-add-team" class="modal"><div class="modal-content"><div class="modal-header"><h3>បន្ថែមសមាជិកគណៈគ្រប់គ្រងថ្មី</h3><i class="fas fa-times close-modal" onclick="closeModal('modal-add-team')"></i></div><form id="addTeamForm" onsubmit="submitTeam(event)"><label class="form-label">ឈ្មោះ</label><input type="text" id="teamName" class="form-control" required><label class="form-label">តួនាទី</label><input type="text" id="teamRole" class="form-control" required><label class="form-label">ការពិពណ៌នាខ្លី (កម្រិតវប្បធម៌ ឬបទពិសោធន៍)</label><input type="text" id="teamDesc" class="form-control"><label class="form-label">តំណភ្ជាប់រូបភាព (Image URL)</label><input type="url" id="teamPhoto" class="form-control" required><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;"><button type="button" class="btn btn-outline" onclick="closeModal('modal-add-team')">បោះបង់</button><button type="submit" id="btn-submit-team" class="btn btn-success" style="width:auto;">រក្សាទុក</button></div></form></div></div>
+
+    <!-- Modal: Add Structure Member -->
+    <div id="modal-add-structure" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-sitemap" style="color:var(--primary); margin-right:8px;"></i> បន្ថែមសមាជិករចនាសម្ព័ន្ធថ្មី</h3>
+                <i class="fas fa-times close-modal" onclick="closeModal('modal-add-structure')"></i>
+            </div>
+            <form id="addStructureForm" onsubmit="saveNewStructure(event)">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">ឈ្មោះសមាជិក *</label>
+                        <input type="text" id="structureNameInput" class="form-control" placeholder="ឧ. លោក នាយក ក" required>
+                    </div>
+                    <div>
+                        <label class="form-label">តួនាទី *</label>
+                        <input type="text" id="structureRoleInput" class="form-control" placeholder="ឧ. នាយកសាលា ឬ នាយករង (បច្ចេកទេស)" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">កម្រិតឋានានុក្រម *</label>
+                        <select id="structureLevelInput" class="form-control" required>
+                            <option value="director">ថ្នាក់ដឹកនាំកំពូល (Director / នាយកសាលា)</option>
+                            <option value="deputy" selected>ថ្នាក់ដឹកនាំរង (Deputy Director / នាយករង)</option>
+                            <option value="department">ប្រធានផ្នែក/ការិយាល័យ (Department / Office Head)</option>
+                            <option value="member">បុគ្គលិក / សមាជិក (Staff / Member)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">ផ្នែក ឬការិយាល័យ</label>
+                        <input type="text" id="structureDeptInput" class="form-control" placeholder="ឧ. គណៈគ្រប់គ្រង, បច្ចេកទេស, រដ្ឋបាល, វិន័យ">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">តំណភ្ជាប់រូបភាព (Image URL / Google Drive)</label>
+                        <input type="url" id="structurePhotoInput" class="form-control" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="form-label">លេខលំដាប់បង្ហាញ (Order)</label>
+                        <input type="number" id="structureOrderInput" class="form-control" value="1" min="1">
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-add-structure')">បោះបង់</button>
+                    <button type="submit" id="btn-save-structure" class="btn btn-success" style="width:auto;"><i class="fas fa-save"></i> រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Structure Member -->
+    <div id="modal-edit-structure" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit" style="color:var(--primary); margin-right:8px;"></i> កែប្រែសមាជិករចនាសម្ព័ន្ធ</h3>
+                <i class="fas fa-times close-modal" onclick="closeModal('modal-edit-structure')"></i>
+            </div>
+            <form id="editStructureForm" onsubmit="saveEditStructure(event)">
+                <input type="hidden" id="editStructureId">
+                <input type="hidden" id="editStructureRowNum">
+                
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">ឈ្មោះសមាជិក *</label>
+                        <input type="text" id="editStructureNameInput" class="form-control" required>
+                    </div>
+                    <div>
+                        <label class="form-label">តួនាទី *</label>
+                        <input type="text" id="editStructureRoleInput" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">កម្រិតឋានានុក្រម *</label>
+                        <select id="editStructureLevelInput" class="form-control" required>
+                            <option value="director">ថ្នាក់ដឹកនាំកំពូល (Director / នាយកសាលា)</option>
+                            <option value="deputy">ថ្នាក់ដឹកនាំរង (Deputy Director / នាយករង)</option>
+                            <option value="department">ប្រធានផ្នែក/ការិយាល័យ (Department / Office Head)</option>
+                            <option value="member">បុគ្គលិក / សមាជិក (Staff / Member)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">ផ្នែក ឬការិយាល័យ</label>
+                        <input type="text" id="editStructureDeptInput" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">តំណភ្ជាប់រូបភាព (Image URL / Google Drive)</label>
+                        <input type="url" id="editStructurePhotoInput" class="form-control">
+                    </div>
+                    <div>
+                        <label class="form-label">លេខលំដាប់បង្ហាញ (Order)</label>
+                        <input type="number" id="editStructureOrderInput" class="form-control" min="1">
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-structure')">បោះបង់</button>
+                    <button type="submit" id="btn-update-structure" class="btn btn-success" style="width:auto;"><i class="fas fa-check"></i> ធ្វើបច្ចុប្បន្នភាព</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-add-gallery" class="modal"><div class="modal-content"><div class="modal-header"><h3>បន្ថែមរូបភាពថ្មី</h3><i class="fas fa-times close-modal" onclick="closeModal('modal-add-gallery')"></i></div><form id="addGalleryForm" onsubmit="saveNewGallery(event)"><label class="form-label">ចំណងជើង ឬព្រឹត្តិការណ៍</label><input type="text" id="galleryTitleInput" class="form-control" required><label class="form-label">តំណភ្ជាប់រូបភាព (Image URL)</label><input type="url" id="galleryImageInput" class="form-control" required><label class="form-label">កាលបរិច្ឆេទ</label><input type="date" id="galleryDateInput" class="form-control" required><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;"><button type="button" class="btn btn-outline" onclick="closeModal('modal-add-gallery')">បោះបង់</button><button type="submit" class="btn btn-success" style="width:auto;">រក្សាទុក</button></div></form></div></div>
+
+    <!-- Modal: Edit Admin Profile -->
+    <div id="modal-edit-profile" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-edit" style="color:var(--primary); margin-right:8px;"></i> កែប្រែប្រវត្តិរូប Admin</h3>
+                <i class="fas fa-times close-modal" onclick="closeModal('modal-edit-profile')"></i>
+            </div>
+            <form id="editAdminProfileForm" onsubmit="saveAdminProfile(event)">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div id="profileAvatarPreviewWrap" style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; overflow: hidden; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; background: var(--bg-card-secondary);">
+                        <img id="profileAvatarPreviewImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;" referrerpolicy="no-referrer">
+                        <i id="profileAvatarPreviewIcon" class="far fa-user" style="font-size: 2.5rem; color: var(--primary);"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ឈ្មោះ Admin (Admin Name) *</label>
+                    <input type="text" id="adminNameInput" class="form-control" placeholder="ឧ. Admin" required>
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label class="form-label"><i class="fas fa-link" style="color: var(--primary); margin-right: 5px;"></i> តំណភ្ជាប់រូបភាព Profile (Avatar Image URL)</label>
+                    <input type="text" id="adminAvatarInput" class="form-control" placeholder="https://..." oninput="updateAdminAvatarPreview(this.value)">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-profile')">បោះបង់</button>
+                    <button type="submit" class="btn btn-success" style="width:auto;"><i class="fas fa-save"></i> រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchView(viewId, navElement) {
+            document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => el.classList.remove('active'));
+            navElement.classList.add('active');
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            if (viewId === 'view-library') loadAdminBooks();
+            else if (viewId === 'view-team') loadAdminTeam();
+            else if (viewId === 'view-structure') loadAdminStructure();
+            else if (viewId === 'view-news') loadAdminNews();
+            else if (viewId === 'view-lessons') loadAdminVideos();
+            else if (viewId === 'view-slides') loadAdminSlides();
+            else if (viewId === 'view-gallery') loadAdminGallery();
+            else if (viewId === 'view-messages') loadAdminMessages();
+        }
+
+        function getPlaceholderSvg(text = 'No Image', width = 400, height = 250) {
+            return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="%23f1f5f9"/><rect x="2" y="2" width="${width-4}" height="${height-4}" rx="6" fill="none" stroke="%23cbd5e1" stroke-dasharray="6,4"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600" fill="%2364748b">${encodeURIComponent(text)}</text></svg>`;
+        }
+
+        function handleImageFallback(img, text = 'No Image') {
+            if (!img) return;
+            if (!img.dataset.retry) {
+                img.dataset.retry = '1';
+                const currentSrc = img.src || '';
+                const match = currentSrc.match(/\/d\/([a-zA-Z0-9_-]+)/) || currentSrc.match(/[?&]id=([a-zA-Z0-9_-]+)/i);
+                if (match && match[1]) {
+                    img.src = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+                    return;
+                }
+            }
+            img.onerror = null;
+            img.src = getPlaceholderSvg(text);
+        }
+
+        function getDriveImageUrl(url) {
+            if (!url || typeof url !== 'string') return getPlaceholderSvg('No Image');
+            url = url.trim();
+            if (!url) return getPlaceholderSvg('No Image');
+
+            if (url.includes('googleusercontent.com/d/')) {
+                return url;
+            }
+
+            let fileId = null;
+            const dMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (dMatch && dMatch[1] && dMatch[1] !== 'undefined') {
+                fileId = dMatch[1];
+            }
+            if (!fileId) {
+                const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/i);
+                if (idMatch && idMatch[1] && idMatch[1] !== 'undefined') {
+                    fileId = idMatch[1];
+                }
+            }
+            if (!fileId && /^[a-zA-Z0-9_-]{25,50}$/.test(url)) {
+                fileId = url;
+            }
+            if (fileId) {
+                return `https://lh3.googleusercontent.com/d/${fileId}`;
+            }
+            if (url.includes('dropbox.com')) {
+                return url.replace(/\?dl=0$/, '?raw=1').replace(/&dl=0$/, '&raw=1');
+            }
+            return url;
+        }
+
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const pwd = document.getElementById('adminPassword').value.trim();
+            const msg = document.getElementById('login-message');
+            const activePwd = localStorage.getItem('adminPassword') || 'admin123';
+            if (pwd === activePwd || pwd === 'admin123' || (typeof google !== 'undefined' && google.script)) {
+                document.getElementById('login-view').style.display = 'none';
+                document.getElementById('admin-layout').style.display = 'flex';
+                initChart();
+                renderCalendar();
+                loadDashboardStats();
+                loadAdminProfile();
+            } else {
+                msg.style.display = 'block';
+                msg.className = 'form-message form-message-error';
+                msg.innerText = 'លេខសម្ងាត់មិនត្រឹមត្រូវទេ!';
+            }
+        });
+
+        function changeAdminPassword(event) {
+            event.preventDefault();
+            const currentPwd = document.getElementById('currentPasswordInput').value;
+            const newPwd = document.getElementById('newPasswordInput').value;
+            const confirmPwd = document.getElementById('confirmPasswordInput').value;
+            const msg = document.getElementById('change-pwd-msg');
+            const btn = document.getElementById('btnChangePassword');
+
+            const storedPwd = localStorage.getItem('adminPassword') || 'admin123';
+
+            if (currentPwd !== storedPwd) {
+                msg.style.display = 'block';
+                msg.style.color = 'var(--danger)';
+                msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> លេខសម្ងាត់ចាស់មិនត្រឹមត្រូវទេ!';
+                return;
+            }
+
+            if (newPwd !== confirmPwd) {
+                msg.style.display = 'block';
+                msg.style.color = 'var(--danger)';
+                msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> លេខសម្ងាត់ថ្មីមិនដូចគ្នាទេ!';
+                return;
+            }
+
+            if (newPwd.length < 4) {
+                msg.style.display = 'block';
+                msg.style.color = 'var(--danger)';
+                msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> លេខសម្ងាត់ថ្មីត្រូវមានយ៉ាងតិច ៤ តួ!';
+                return;
+            }
+
+            const originalBtnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> កំពុងប្តូរ...';
+
+            setTimeout(() => {
+                localStorage.setItem('adminPassword', newPwd);
+                msg.style.display = 'block';
+                msg.style.color = 'var(--success)';
+                msg.innerHTML = '<i class="fas fa-check-circle"></i> បានប្តូរលេខសម្ងាត់ជោគជ័យ!';
+                document.getElementById('changePasswordForm').reset();
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+
+                setTimeout(() => {
+                    msg.style.display = 'none';
+                }, 4000);
+            }, 400);
+        }
+
+        function loadDashboardStats() {
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(stats) {
+                    if (stats) {
+                        document.getElementById('stat-staff').innerText = stats.staffCount || 0;
+                        document.getElementById('stat-book').innerText = stats.bookCount || 0;
+                        document.getElementById('stat-msg').innerText = stats.messageCount || 0;
+                        document.getElementById('stat-member').innerText = stats.memberCount || 0;
+                    }
+                }).getDashboardStats();
+            } else {
+                // Local mode — count real data from localStorage
+                try {
+                    const visitors = parseInt(localStorage.getItem('visitorCount') || '0', 10);
+                    document.getElementById('stat-staff').innerText = visitors;
+                } catch(e) {}
+                try {
+                    const books = JSON.parse(localStorage.getItem('mockBooks') || '[]');
+                    document.getElementById('stat-book').innerText = books.length;
+                } catch(e) {}
+                try {
+                    const msgs = JSON.parse(localStorage.getItem('mockMessages') || '[]');
+                    document.getElementById('stat-msg').innerText = msgs.length;
+                } catch(e) {}
+                try {
+                    const videos = JSON.parse(localStorage.getItem('mockVideos') || '[]');
+                    document.getElementById('stat-member').innerText = videos.length;
+                } catch(e) {}
+            }
+            renderDashboardRecentMessages();
+            renderDashboardRecentBooks();
+        }
+
+        function renderDashboardRecentMessages() {
+            const container = document.getElementById('dashboard-recent-messages');
+            if (!container) return;
+            try {
+                const allMsgs = JSON.parse(localStorage.getItem('mockMessages') || '[]');
+                const msgs = allMsgs.filter(m => !m.isOutbound && !(m.id && m.id.startsWith('MSG-OUT-')));
+                if (msgs.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">មិនមានសារទេ</div>';
+                    return;
+                }
+                // Show latest 4
+                container.innerHTML = msgs.slice(0, 4).map(m => {
+                    const isUnread = m.status === 'unread';
+                    const visitorBadge = m.fromVisitor
+                        ? '<span style="background:#dbeafe; color:#1d4ed8; font-size:0.65rem; padding:1px 5px; border-radius:6px; margin-left:5px; font-weight:600;"><i class="fas fa-globe" style="font-size:0.6rem;"></i> ពីអ្នកចូលមើល</span>'
+                        : '';
+                    return `
+                        <div class="data-item" style="${isUnread ? 'background:rgba(13,110,253,0.04); border-radius:8px;' : ''}" onclick="switchView('view-messages', document.querySelector('.nav-item:nth-child(5)'))">
+                            <div class="item-icon" style="${isUnread ? 'background:rgba(13,110,253,0.15);' : ''}">
+                                <i class="fas fa-envelope" style="${isUnread ? 'color:var(--primary);' : ''}"></i>
+                            </div>
+                            <div class="item-content">
+                                <div>
+                                    <div class="item-title" style="${isUnread ? 'font-weight:700;' : ''}">${m.sender || m.name || 'អនាមិក'}${visitorBadge}</div>
+                                    <div class="item-subtitle">ប្រធានបទ៖ ${m.subject || 'គ្មានប្រធានបទ'}</div>
+                                </div>
+                                <div class="item-subtitle" style="white-space:nowrap;">${(m.date || '').split(' ')[0] || ''}</div>
+                            </div>
+                        </div>`;
+                }).join('');
+            } catch(e) {
+                container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">មិនអាចទាញសារបាន</div>';
+            }
+        }
+
+        function renderDashboardRecentBooks() {
+            const container = document.getElementById('dashboard-recent-books');
+            if (!container) return;
+            try {
+                const books = JSON.parse(localStorage.getItem('mockBooks') || '[]');
+                if (books.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">មិនមានសៀវភៅទេ</div>';
+                    return;
+                }
+                const recent = books.slice(0, 4);
+                container.innerHTML = recent.map(b => {
+                    const authorText = b.author ? `អ្នកនិពន្ធ៖ ${b.author}` : 'មិនបញ្ជាក់អ្នកនិពន្ធ';
+                    return `
+                        <div class="data-item" onclick="switchView('view-library', document.querySelector('.nav-item:nth-child(2)'))" style="cursor:pointer;">
+                            <div class="item-icon"><i class="fas fa-book" style="color: #dc3545;"></i></div>
+                            <div class="item-content">
+                                <div>
+                                    <div class="item-title">${b.title || 'គ្មានចំណងជើង'}</div>
+                                    <div class="item-subtitle">${authorText}</div>
+                                </div>
+                                <div class="item-subtitle" style="white-space:nowrap;">${b.category || 'ទូទៅ'}</div>
+                            </div>
+                        </div>`;
+                }).join('');
+            } catch(e) {
+                container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">មិនអាចទាញទិន្នន័យបាន</div>';
+            }
+        }
+        
+        function loadSettings() {
+            let settings = {
+                name: "សាលាគរុកោសល្យ និងវិក្រឹតការខេត្តក្រចេះ",
+                vision: "ក្លាយជាសាលាគំរូឈានមុខគេក្នុងការផ្តល់សេវាអប់រំ និងបណ្តុះបណ្តាលធនធានមនុស្សប្រកបដោយសក្តានុពល។",
+                mission: "លើកកម្ពស់គុណភាពអប់រំ ផ្តោតលើចំណេះដឹង ជំនាញ សីលធម៌ និងនវានុវត្តន៍។",
+                values: "វិន័យ គុណធម៌ សាមគ្គីភាព និងការទទួលខុសត្រូវខ្ពស់ក្នុងសង្គម។",
+                historyP1: "សាលារៀនរបស់យើងត្រូវបានបង្កើតឡើងនៅក្នុងឆ្នាំ ១៩៩០ ដោយមានគោលបំណងចម្បងក្នុងការបណ្ដុះបណ្ដាលគរុសិស្ស/គរុនិស្សិត។ ឆ្លងកាត់រយៈពេលជាង ៣០ ឆ្នាំ សាលាបានអភិវឌ្ឍខ្លួនពីអគារឈើប្រក់ក្បឿង មកជាអគារបេតុងទំនើបដែលបំពាក់ដោយសម្ភារៈសិក្សាគ្រប់គ្រាន់។",
+                historyP2: "បច្ចុប្បន្ន សាលាគរុកោសល្យ និងវិក្រឹតការខេត្តក្រចេះ មានគរុសិស្ស/គរុនិស្សិតជាង ២០០០ នាក់ និងលោកគ្រូអ្នកគ្រូជាង ១០០ នាក់ ដែលកំពុងបំពេញបេសកកម្មបណ្ដុះបណ្ដាលគរុសិស្ស/គរុនិស្សិតសម្រាប់ប្រទេសជាតិ។",
+                historyImage: "https://drive.google.com/file/d/1eqv7sSwcybv5OG9HfL1l4s4ugpAgQHG0/view?usp=share_link",
+                mapUrl: "https://maps.app.goo.gl/e9iEnTB2JdNTMY1f6"
+            };
+
+            try {
+                const stored = localStorage.getItem('schoolSettings');
+                if (stored) settings = { ...settings, ...JSON.parse(stored) };
+            } catch(e) {}
+
+            if (document.getElementById('settingSchoolName')) document.getElementById('settingSchoolName').value = settings.name || '';
+            if (document.getElementById('settingMapUrl')) document.getElementById('settingMapUrl').value = settings.mapUrl || '';
+            if (document.getElementById('settingVision')) document.getElementById('settingVision').value = settings.vision || '';
+            if (document.getElementById('settingMission')) document.getElementById('settingMission').value = settings.mission || '';
+            if (document.getElementById('settingValues')) document.getElementById('settingValues').value = settings.values || '';
+            if (document.getElementById('settingHistoryP1')) document.getElementById('settingHistoryP1').value = settings.historyP1 || '';
+            if (document.getElementById('settingHistoryP2')) document.getElementById('settingHistoryP2').value = settings.historyP2 || '';
+            if (document.getElementById('settingHistoryImage')) {
+                document.getElementById('settingHistoryImage').value = settings.historyImage || '';
+                updateHistoryImgPreview(settings.historyImage || '');
+            }
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(serverSettings) {
+                    if (serverSettings) {
+                        if (serverSettings.name) document.getElementById('settingSchoolName').value = serverSettings.name;
+                        if (serverSettings.mapUrl) document.getElementById('settingMapUrl').value = serverSettings.mapUrl;
+                        if (serverSettings.vision) document.getElementById('settingVision').value = serverSettings.vision;
+                        if (serverSettings.mission) document.getElementById('settingMission').value = serverSettings.mission;
+                        if (serverSettings.values) document.getElementById('settingValues').value = serverSettings.values;
+                        if (serverSettings.historyP1) document.getElementById('settingHistoryP1').value = serverSettings.historyP1;
+                        if (serverSettings.historyP2) document.getElementById('settingHistoryP2').value = serverSettings.historyP2;
+                        if (serverSettings.historyImage) {
+                            document.getElementById('settingHistoryImage').value = serverSettings.historyImage;
+                            updateHistoryImgPreview(serverSettings.historyImage);
+                        }
+                    }
+                }).getSchoolSettings();
+            }
+        }
+
+        // ==========================================
+        // Admin Profile Management
+        // ==========================================
+        let adminProfile = {
+            name: "Admin",
+            avatar: ""
+        };
+
+        function loadAdminProfile() {
+            try {
+                const stored = localStorage.getItem('adminProfile');
+                if (stored) {
+                    adminProfile = { ...adminProfile, ...JSON.parse(stored) };
+                }
+            } catch(e) {}
+
+            renderAdminProfile();
+        }
+
+        function renderAdminProfile() {
+            const topbarName = document.getElementById('topbarAdminName');
+            const topbarAvatar = document.getElementById('topbarAdminAvatar');
+            
+            if (topbarName) {
+                topbarName.innerHTML = `${adminProfile.name || 'Admin'} <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-left: 5px; color: var(--primary);"></i>`;
+            }
+            if (topbarAvatar) {
+                if (adminProfile.avatar && adminProfile.avatar.trim()) {
+                    const imgUrl = getDriveImageUrl(adminProfile.avatar.trim());
+                    topbarAvatar.innerHTML = `<img src="${imgUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<i class=\\'far fa-user\\'></i>'">`;
+                } else {
+                    topbarAvatar.innerHTML = `<i class="far fa-user"></i>`;
+                }
+            }
+
+            if (document.getElementById('settingAdminName')) document.getElementById('settingAdminName').value = adminProfile.name || 'Admin';
+            if (document.getElementById('settingAdminAvatar')) document.getElementById('settingAdminAvatar').value = adminProfile.avatar || '';
+            updateAdminSettingAvatarPreview(adminProfile.avatar || '');
+
+            if (document.getElementById('adminNameInput')) document.getElementById('adminNameInput').value = adminProfile.name || 'Admin';
+            if (document.getElementById('adminAvatarInput')) document.getElementById('adminAvatarInput').value = adminProfile.avatar || '';
+            updateAdminAvatarPreview(adminProfile.avatar || '');
+        }
+
+        function updateAdminAvatarPreview(url) {
+            const img = document.getElementById('profileAvatarPreviewImg');
+            const icon = document.getElementById('profileAvatarPreviewIcon');
+            if (!img || !icon) return;
+            if (url && url.trim()) {
+                img.src = getDriveImageUrl(url.trim());
+                img.style.display = 'block';
+                icon.style.display = 'none';
+            } else {
+                img.style.display = 'none';
+                icon.style.display = 'block';
+            }
+        }
+
+        function updateAdminSettingAvatarPreview(url) {
+            const img = document.getElementById('settingProfileAvatarImg');
+            const icon = document.getElementById('settingProfileAvatarIcon');
+            if (!img || !icon) return;
+            if (url && url.trim()) {
+                img.src = getDriveImageUrl(url.trim());
+                img.style.display = 'block';
+                icon.style.display = 'none';
+            } else {
+                img.style.display = 'none';
+                icon.style.display = 'block';
+            }
+        }
+
+        function openEditProfileModal() {
+            loadAdminProfile();
+            openModal('modal-edit-profile');
+        }
+
+        function saveAdminProfile(event) {
+            if (event) event.preventDefault();
+            const name = document.getElementById('adminNameInput') ? document.getElementById('adminNameInput').value.trim() : 'Admin';
+            const avatar = document.getElementById('adminAvatarInput') ? document.getElementById('adminAvatarInput').value.trim() : '';
+
+            adminProfile = { name: name || 'Admin', avatar: avatar };
+
+            try {
+                localStorage.setItem('adminProfile', JSON.stringify(adminProfile));
+            } catch(e) {}
+
+            renderAdminProfile();
+            closeModal('modal-edit-profile');
+        }
+
+        function saveAdminProfileFromSettings() {
+            const name = document.getElementById('settingAdminName') ? document.getElementById('settingAdminName').value.trim() : 'Admin';
+            const avatar = document.getElementById('settingAdminAvatar') ? document.getElementById('settingAdminAvatar').value.trim() : '';
+
+            adminProfile = { name: name || 'Admin', avatar: avatar };
+
+            try {
+                localStorage.setItem('adminProfile', JSON.stringify(adminProfile));
+            } catch(e) {}
+
+            renderAdminProfile();
+
+            const msg = document.getElementById('save-setting-msg-profile');
+            if (msg) {
+                msg.style.display = 'inline';
+                setTimeout(() => msg.style.display = 'none', 3000);
+            }
+        }
+
+        function updateHistoryImgPreview(url) {
+            const wrap = document.getElementById('historyImgPreviewWrap');
+            const img = document.getElementById('historyImgPreview');
+            if (!wrap || !img) return;
+            if (url && url.trim()) {
+                img.src = getDriveImageUrl(url.trim());
+                wrap.style.display = 'block';
+            } else {
+                wrap.style.display = 'none';
+            }
+        }
+        
+        function saveNewBook(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> រក្សាទុក...';
+            btn.disabled = true;
+
+            const bookData = {
+                code: document.getElementById('bookCodeInput').value,
+                category: document.getElementById('bookCategoryInput').value,
+                title: document.getElementById('bookTitleInput').value,
+                grade: document.getElementById('bookGradeInput').value,
+                author: document.getElementById('bookAuthorInput').value,
+                link: document.getElementById('bookUrlInput').value,
+                cover: document.getElementById('bookCoverInput').value
+            };
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(success) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    if(success) {
+                        alert("បានរក្សាទុកសៀវភៅថ្មីដោយជោគជ័យ!");
+                        closeModal('modal-add-book');
+                        document.getElementById('addBookForm').reset();
+                        loadAdminBooks();
+                    } else {
+                        alert("មានបញ្ហាក្នុងការរក្សាទុកសៀវភៅ!");
+                    }
+                }).addBook(bookData);
+            } else {
+                // Local fallback
+                setTimeout(() => {
+                    localMockBooks.push({
+                        code: bookData.code,
+                        title: bookData.title,
+                        author: bookData.author || 'មិនបញ្ជាក់',
+                        category: bookData.category,
+                        link: bookData.link || '#',
+                        cover: bookData.cover || '',
+                        rowNum: Date.now()
+                    });
+                    saveLocalMockBooks();
+                    alert("បានរក្សាទុកសៀវភៅថ្មីដោយជោគជ័យ! (Local Mock)");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    closeModal('modal-add-book');
+                    document.getElementById('addBookForm').reset();
+                    loadAdminBooks();
+                    
+                    // Switch to Library view if currently in Dashboard to see the new book
+                    if (document.getElementById('view-dashboard').classList.contains('active')) {
+                        switchView('view-library', document.querySelector('.nav-item:nth-child(2)'));
+                    }
+                }, 1000);
+            }
+        }
+
+        function getLocalMockBooks() {
+            try {
+                const stored = localStorage.getItem('mockBooks');
+                if(stored) return JSON.parse(stored);
+            } catch(e) {}
+            return [
+                { code: 'B001', title: 'ប្រវត្តិសាស្ត្រខ្មែរ', author: 'ត្រឹង ងា', category: 'ប្រវត្តិសាស្ត្រ', link: '#', cover: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400' },
+                { code: 'B002', title: 'គណិតវិទ្យា ថ្នាក់ទី១២', author: 'ក្រសួងអប់រំ', category: 'វិទ្យាសាស្ត្រ', link: '#', cover: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400' }
+            ];
+        }
+
+        let localMockBooks = getLocalMockBooks();
+
+        function saveLocalMockBooks() {
+            try {
+                localStorage.setItem('mockBooks', JSON.stringify(localMockBooks));
+                const statBook = document.getElementById('stat-book');
+                if (statBook) statBook.innerText = localMockBooks.length;
+                if (typeof initChart === 'function') initChart();
+                if (typeof renderDashboardRecentBooks === 'function') renderDashboardRecentBooks();
+            } catch(e) {}
+        }
+
+        function loadAdminBooks() {
+            const tbody = document.getElementById('admin-books-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>';
+            
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(books) {
+                    if (!books || books.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">មិនមានទិន្នន័យសៀវភៅទេ</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = books.map(b => `
+                        <tr>
+                            <td><img src="${getDriveImageUrl(b.cover)}" referrerpolicy="no-referrer" loading="lazy" style="width:36px; height:48px; object-fit:cover; border-radius:4px;" onerror="handleImageFallback(this, 'No Cover')"></td>
+                            <td>${b.code}</td>
+                            <td>${b.title}</td>
+                            <td>${b.author || 'មិនបញ្ជាក់'}</td>
+                            <td>${b.category}</td>
+                            <td class="action-icons">
+                                <i class="fas fa-edit" title="កែប្រែ"></i>
+                                <i class="fas fa-trash" style="color:var(--danger)" title="លុប" onclick="if(confirm('តើអ្នកពិតជាចង់លុបសៀវភៅនេះមែនទេ?')) deleteAdminBook(${b.rowNum})"></i>
+                            </td>
+                        </tr>
+                    `).join('');
+                }).getBooks();
+            } else {
+                // Local mock
+                setTimeout(() => {
+                    if(localMockBooks.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">មិនមានទិន្នន័យសៀវភៅទេ</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = localMockBooks.map((b, idx) => `
+                        <tr>
+                            <td><img src="${getDriveImageUrl(b.cover)}" referrerpolicy="no-referrer" loading="lazy" style="width:36px; height:48px; object-fit:cover; border-radius:4px;" onerror="handleImageFallback(this, 'No Cover')"></td>
+                            <td>${b.code}</td>
+                            <td>${b.title}</td>
+                            <td>${b.author}</td>
+                            <td>${b.category}</td>
+                            <td class="action-icons">
+                                <i class="fas fa-edit" title="កែប្រែ"></i>
+                                <i class="fas fa-trash" style="color:var(--danger)" title="លុប" onclick="if(confirm('តើអ្នកពិតជាចង់លុបសៀវភៅនេះមែនទេ?')) { localMockBooks.splice(${idx}, 1); saveLocalMockBooks(); loadAdminBooks(); }"></i>
+                            </td>
+                        </tr>
+                    `).join('');
+                }, 1000);
+            }
+        }
+
+        function deleteAdminBook(rowNum) {
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(success) {
+                    if(success) loadAdminBooks();
+                    else alert("មានបញ្ហាក្នុងការលុបសៀវភៅ!");
+                }).deleteBookRow(rowNum);
+            }
+        }
+
+        function getLocalMockTeam() {
+            try {
+                const stored = localStorage.getItem('mockTeam');
+                if(stored) return JSON.parse(stored);
+            } catch(e) {}
+            return [
+                { name: 'លោក នាយក ក', role: 'នាយកសាលា', photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400', description: 'បរិញ្ញាបត្រជាន់ខ្ពស់ គ្រប់គ្រងអប់រំ', rowNum: 2 },
+                { name: 'លោកស្រី នាយករង ខ', role: 'នាយករង បច្ចេកទេស', photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400', description: 'បរិញ្ញាបត្រ គរុកោសល្យ', rowNum: 3 }
+            ];
+        }
+
+        let localMockTeam = getLocalMockTeam();
+
+        function saveLocalMockTeam() {
+            try {
+                localStorage.setItem('mockTeam', JSON.stringify(localMockTeam));
+            } catch(e) {}
+        }
+
+        function submitTeam(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-team');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'កំពុងរក្សាទុក...';
+            btn.disabled = true;
+
+            const data = {
+                name: document.getElementById('teamName').value,
+                role: document.getElementById('teamRole').value,
+                desc: document.getElementById('teamDesc').value,
+                photo: document.getElementById('teamPhoto').value
+            };
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(success) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    if(success) {
+                        alert("បានរក្សាទុកដោយជោគជ័យ!");
+                        closeModal('modal-add-team');
+                        document.getElementById('addTeamForm').reset();
+                        loadAdminTeam();
+                    } else {
+                        alert("មានបញ្ហាក្នុងការរក្សាទុក!");
+                    }
+                }).addTeamMember(data);
+            } else {
+                setTimeout(() => {
+                    localMockTeam.push({
+                        name: data.name,
+                        role: data.role,
+                        description: data.desc,
+                        photo: data.photo,
+                        rowNum: Date.now()
+                    });
+                    saveLocalMockTeam();
+                    
+                    alert("បានរក្សាទុកសមាជិកថ្មីដោយជោគជ័យ! (Local Mock)");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    closeModal('modal-add-team');
+                    document.getElementById('addTeamForm').reset();
+                    loadAdminTeam();
+                }, 500);
+            }
+        }
+
+        function loadAdminTeam() {
+            const tbody = document.getElementById('team-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>';
+            
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(team) {
+                    if (!team || team.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">មិនមានទិន្នន័យទេ</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = team.map(member => `
+                        <tr>
+                            <td><img src="${getDriveImageUrl(member.photo)}" referrerpolicy="no-referrer" loading="lazy" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" onerror="handleImageFallback(this, 'Photo')"></td>
+                            <td>${member.name}</td>
+                            <td>${member.role}</td>
+                            <td>${member.description || '-'}</td>
+                            <td class="action-icons">
+                                <i class="fas fa-trash" style="color:var(--danger)" title="លុប" onclick="if(confirm('តើអ្នកពិតជាចង់លុបសមាជិកនេះមែនទេ?')) deleteAdminTeam(${member.rowNum})"></i>
+                            </td>
+                        </tr>
+                    `).join('');
+                }).getTeamAdmin();
+            } else {
+                setTimeout(() => {
+                    if (localMockTeam.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">មិនមានទិន្នន័យទេ</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = localMockTeam.map((member, idx) => `<tr><td><img src="${getDriveImageUrl(member.photo)}" referrerpolicy="no-referrer" loading="lazy" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" onerror="handleImageFallback(this, 'Photo')"></td><td>${member.name}</td><td>${member.role}</td><td>${member.description}</td><td class="action-icons"><i class="fas fa-trash" style="color:var(--danger)" onclick="localMockTeam.splice(${idx}, 1); saveLocalMockTeam(); loadAdminTeam();"></i></td></tr>`).join('');
+                }, 500);
+            }
+        }
+
+        function deleteAdminTeam(rowNum) {
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(success) {
+                    if(success) loadAdminTeam();
+                    else alert("មានបញ្ហាក្នុងការលុប!");
+                }).deleteTeamRow(rowNum);
+            }
+        }
+
+        // ===================================
+        // School Structure Management Logic
+        // ===================================
+        function getLocalMockStructure() {
+            try {
+                const stored = localStorage.getItem('mockStructure');
+                if (stored) return JSON.parse(stored);
+            } catch(e) {}
+            return [
+                { id: '1', name: 'លោក អេង សុខា', role: 'នាយកសាលា', level: 'director', department: 'គណៈគ្រប់គ្រង', photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400', order: 1, rowNum: 2 },
+                { id: '2', name: 'លោក ហាង និមល', role: 'នាយករង (រដ្ឋបាល)', level: 'deputy', department: 'រដ្ឋបាល', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400', order: 2, rowNum: 3 },
+                { id: '3', name: 'លោក នាយករង គ', role: 'នាយករង (រដ្ឋបាល)', level: 'deputy', department: 'រដ្ឋបាល', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400', order: 3, rowNum: 4 },
+                { id: '4', name: 'លោកស្រី នាយករង ឃ', role: 'នាយករង (វិន័យ)', level: 'deputy', department: 'វិន័យ', photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400', order: 4, rowNum: 5 }
+            ];
+        }
+
+        let localMockStructure = getLocalMockStructure();
+
+        function saveLocalMockStructure() {
+            localStorage.setItem('mockStructure', JSON.stringify(localMockStructure));
+        }
+
+        function getLevelBadge(level) {
+            if (level === 'director') return '<span class="badge" style="background:#1d4ed8; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.75rem; font-weight:600;"><i class="fas fa-crown"></i> ថ្នាក់ដឹកនាំកំពូល</span>';
+            if (level === 'deputy') return '<span class="badge" style="background:#2563eb; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.75rem; font-weight:600;"><i class="fas fa-user-tie"></i> ថ្នាក់ដឹកនាំរង</span>';
+            if (level === 'department') return '<span class="badge" style="background:#059669; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.75rem; font-weight:600;"><i class="fas fa-building"></i> ប្រធានផ្នែក</span>';
+            return '<span class="badge" style="background:#64748b; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.75rem; font-weight:600;"><i class="fas fa-user"></i> បុគ្គលិក</span>';
+        }
+
+        function getAdminMemberAvatarHtml(m) {
+            let imgUrl = m.photo ? getDriveImageUrl(m.photo) : '';
+            const isFemale = m.name && (m.name.includes('លោកស្រី') || m.name.includes('អ្នកស្រី') || m.name.includes('អ្នកនាង') || m.name.includes('កញ្ញា'));
+            const defaultMale = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%231e40af'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20,85 C20,62 33,52 50,52 C67,52 80,62 80,85 Z' fill='%23ffffff'/></svg>";
+            const defaultFemale = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%23db2777'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20,85 C20,62 33,52 50,52 C67,52 80,62 80,85 Z' fill='%23ffffff'/></svg>";
+            const fallbackSrc = isFemale ? defaultFemale : defaultMale;
+            const finalSrc = imgUrl || fallbackSrc;
+            return `<img src="${finalSrc}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff; margin-bottom:8px; box-shadow:0 4px 10px rgba(0,0,0,0.2);" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackSrc}';">`;
+        }
+
+        function renderAdminStructureTree(structureList) {
+            const previewContainer = document.getElementById('admin-structure-preview');
+            if (!previewContainer) return;
+
+            if (!structureList || structureList.length === 0) {
+                previewContainer.innerHTML = '<p style="color:#94a3b8; padding:20px;">មិនទាន់មានទិន្នន័យរចនាសម្ព័ន្ធនៅឡើយទេ។</p>';
+                return;
+            }
+
+            // Sort by order
+            const sorted = [...structureList].sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+            
+            // Extract top director(s) and deputies/others
+            const directors = sorted.filter(m => m.level === 'director' || (!m.level && m.role && m.role.includes('នាយក') && !m.role.includes('រង')));
+            const deputies = sorted.filter(m => m.level === 'deputy' || (!m.level && m.role && m.role.includes('នាយករង')));
+            const others = sorted.filter(m => !directors.includes(m) && !deputies.includes(m));
+
+            // Default fallback if no specific director flagged
+            const topMembers = directors.length > 0 ? directors : [sorted[0]];
+            const branchMembers = directors.length > 0 ? deputies : sorted.slice(1);
+
+            let html = '<div style="display:inline-block; min-width:320px; max-width:100%;">';
+            
+            // Director Level (Top)
+            html += '<div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap;">';
+            topMembers.forEach(d => {
+                html += `
+                    <div style="background:linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%); color:#fff; padding:18px 24px; border-radius:16px; min-width:220px; box-shadow:0 8px 20px rgba(37,99,235,0.3); border:1px solid rgba(255,255,255,0.2); display:flex; flex-direction:column; align-items:center;">
+                        <div style="font-size:0.75rem; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; margin-bottom:8px; font-weight:700;"><i class="fas fa-crown"></i> ${d.role || 'នាយកសាលា'}</div>
+                        ${getAdminMemberAvatarHtml(d)}
+                        <div style="font-weight:700; font-size:1.05rem;">${d.name}</div>
+                        ${d.department ? `<div style="font-size:0.75rem; opacity:0.85; margin-top:2px;">${d.department}</div>` : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            // Connecting Lines and Branches
+            if (branchMembers.length > 0) {
+                html += '<div style="width:3px; height:28px; background:#3b82f6; margin:0 auto;"></div>';
+                
+                if (branchMembers.length > 1) {
+                    const widthPercent = Math.min(85, Math.max(30, (branchMembers.length - 1) * 28));
+                    html += `<div style="width:${widthPercent}%; height:3px; background:#3b82f6; margin:0 auto;"></div>`;
+                }
+
+                html += '<div style="display:flex; justify-content:center; gap:24px; flex-wrap:wrap; margin-top:0;">';
+                branchMembers.forEach(dep => {
+                    html += `
+                        <div style="display:flex; flex-direction:column; align-items:center;">
+                            <div style="width:3px; height:24px; background:#3b82f6;"></div>
+                            <div style="background:#1e293b; color:#f8fafc; border:1.5px solid #3b82f6; padding:16px 20px; border-radius:16px; min-width:200px; box-shadow:0 6px 16px rgba(0,0,0,0.3); display:flex; flex-direction:column; align-items:center;">
+                                <div style="font-size:0.75rem; background:rgba(96,165,250,0.2); color:#60a5fa; padding:2px 8px; border-radius:10px; margin-bottom:8px; font-weight:700;"><i class="fas fa-user-tie"></i> ${dep.role}</div>
+                                ${getAdminMemberAvatarHtml(dep)}
+                                <div style="font-weight:700; font-size:0.95rem; color:#f1f5f9;">${dep.name}</div>
+                                ${dep.department ? `<div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${dep.department}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Other departments/staff if any
+            if (others.length > 0) {
+                html += '<div style="margin-top:25px; padding-top:15px; border-top:1px dashed rgba(255,255,255,0.15); display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">';
+                others.forEach(oth => {
+                    html += `
+                        <div style="background:rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.1); padding:12px 16px; border-radius:12px; color:#cbd5e1; font-size:0.85rem; display:flex; flex-direction:column; align-items:center;">
+                            ${getAdminMemberAvatarHtml(oth)}
+                            <strong>${oth.role}:</strong> ${oth.name}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            html += '</div>';
+            previewContainer.innerHTML = html;
+        }
+
+        function loadAdminStructure() {
+            const tbody = document.getElementById('structure-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>';
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(structure) {
+                    if (!structure || structure.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">មិនមានទិន្នន័យទេ</td></tr>';
+                        renderAdminStructureTree([]);
+                        return;
+                    }
+                    tbody.innerHTML = structure.map(item => `
+                        <tr>
+                            <td>
+                                <img src="${item.photo ? getDriveImageUrl(item.photo) : getPlaceholderSvg(item.name ? item.name.substring(0, 2) : 'ST', 60, 60)}" referrerpolicy="no-referrer" loading="lazy" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid rgba(0,0,0,0.1);" onerror="handleImageFallback(this, 'Photo')">
+                            </td>
+                            <td><strong>${item.name}</strong></td>
+                            <td>${item.role}</td>
+                            <td>${getLevelBadge(item.level)}</td>
+                            <td>${item.department || '-'}</td>
+                            <td style="text-align:center;"><span class="badge" style="background:#e2e8f0; color:#334155; padding:2px 8px; border-radius:4px;">${item.order || 1}</span></td>
+                            <td class="action-icons" style="text-align:center;">
+                                <i class="fas fa-edit" style="color:var(--primary); margin-right:12px; cursor:pointer;" title="កែប្រែ" onclick='openEditStructureModal(${JSON.stringify(item)})'></i>
+                                <i class="fas fa-trash" style="color:var(--danger); cursor:pointer;" title="លុប" onclick="if(confirm('តើអ្នកពិតជាចង់លុបសមាជិកនេះមែនទេ?')) deleteAdminStructure(${item.rowNum})"></i>
+                            </td>
+                        </tr>
+                    `).join('');
+                    renderAdminStructureTree(structure);
+                }).getStructureAdmin();
+            } else {
+                setTimeout(() => {
+                    if (localMockStructure.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">មិនមានទិន្នន័យទេ</td></tr>';
+                        renderAdminStructureTree([]);
+                        return;
+                    }
+                    tbody.innerHTML = localMockStructure.map((item, idx) => `
+                        <tr>
+                            <td>
+                                <img src="${item.photo ? getDriveImageUrl(item.photo) : getPlaceholderSvg(item.name ? item.name.substring(0, 2) : 'ST', 60, 60)}" referrerpolicy="no-referrer" loading="lazy" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid rgba(0,0,0,0.1);" onerror="handleImageFallback(this, 'Photo')">
+                            </td>
+                            <td><strong>${item.name}</strong></td>
+                            <td>${item.role}</td>
+                            <td>${getLevelBadge(item.level)}</td>
+                            <td>${item.department || '-'}</td>
+                            <td style="text-align:center;"><span class="badge" style="background:#e2e8f0; color:#334155; padding:2px 8px; border-radius:4px;">${item.order || (idx + 1)}</span></td>
+                            <td class="action-icons" style="text-align:center;">
+                                <i class="fas fa-edit" style="color:var(--primary); margin-right:12px; cursor:pointer;" title="កែប្រែ" onclick='openEditStructureModal(${JSON.stringify(item)}, ${idx})'></i>
+                                <i class="fas fa-trash" style="color:var(--danger); cursor:pointer;" title="លុប" onclick="if(confirm('តើអ្នកពិតជាចង់លុបសមាជិកនេះមែនទេ?')) { localMockStructure.splice(${idx}, 1); saveLocalMockStructure(); loadAdminStructure(); }"></i>
+                            </td>
+                        </tr>
+                    `).join('');
+                    renderAdminStructureTree(localMockStructure);
+                }, 300);
+            }
+        }
+
+        function saveNewStructure(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btn-save-structure');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> កំពុងរក្សាទុក...';
+            btn.disabled = true;
+
+            const data = {
+                id: Date.now().toString(),
+                name: document.getElementById('structureNameInput').value.trim(),
+                role: document.getElementById('structureRoleInput').value.trim(),
+                level: document.getElementById('structureLevelInput').value,
+                department: document.getElementById('structureDeptInput').value.trim(),
+                photo: document.getElementById('structurePhotoInput').value.trim(),
+                order: parseInt(document.getElementById('structureOrderInput').value) || (localMockStructure.length + 1)
+            };
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(success) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    if (success) {
+                        alert("បានរក្សាទុកសមាជិករចនាសម្ព័ន្ធដោយជោគជ័យ!");
+                        closeModal('modal-add-structure');
+                        document.getElementById('addStructureForm').reset();
+                        loadAdminStructure();
+                    } else {
+                        alert("មានបញ្ហាក្នុងការរក្សាទុក!");
+                    }
+                }).addStructureMember(data);
+            } else {
+                setTimeout(() => {
+                    data.rowNum = Date.now();
+                    localMockStructure.push(data);
+                    saveLocalMockStructure();
+
+                    alert("បានរក្សាទុកសមាជិករចនាសម្ព័ន្ធដោយជោគជ័យ! (Local Mock)");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    closeModal('modal-add-structure');
+                    document.getElementById('addStructureForm').reset();
+                    loadAdminStructure();
+                }, 400);
+            }
+        }
+
+        function openEditStructureModal(item, localIdx) {
+            document.getElementById('editStructureId').value = item.id || '';
+            document.getElementById('editStructureRowNum').value = item.rowNum || (localIdx !== undefined ? localIdx : '');
+            document.getElementById('editStructureNameInput').value = item.name || '';
+            document.getElementById('editStructureRoleInput').value = item.role || '';
+            document.getElementById('editStructureLevelInput').value = item.level || 'deputy';
+            document.getElementById('editStructureDeptInput').value = item.department || '';
+            document.getElementById('editStructurePhotoInput').value = item.photo || '';
+            document.getElementById('editStructureOrderInput').value = item.order || 1;
+            openModal('modal-edit-structure');
+        }
+
+        function saveEditStructure(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btn-update-structure');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> កំពុងកែប្រែ...';
+            btn.disabled = true;
+
+            const id = document.getElementById('editStructureId').value;
+            const rowNum = document.getElementById('editStructureRowNum').value;
+
+            const updatedData = {
+                id: id,
+                rowNum: rowNum,
+                name: document.getElementById('editStructureNameInput').value.trim(),
+                role: document.getElementById('editStructureRoleInput').value.trim(),
+                level: document.getElementById('editStructureLevelInput').value,
+                department: document.getElementById('editStructureDeptInput').value.trim(),
+                photo: document.getElementById('editStructurePhotoInput').value.trim(),
+                order: parseInt(document.getElementById('editStructureOrderInput').value) || 1
+            };
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(success) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    if (success) {
+                        alert("បានកែប្រែទិន្នន័យដោយជោគជ័យ!");
+                        closeModal('modal-edit-structure');
+                        loadAdminStructure();
+                    } else {
+                        alert("មានបញ្ហាក្នុងការកែប្រែទិន្នន័យ!");
+                    }
+                }).updateStructureMember(updatedData);
+            } else {
+                setTimeout(() => {
+                    const idx = localMockStructure.findIndex(m => m.id === id || m.rowNum == rowNum);
+                    if (idx !== -1) {
+                        localMockStructure[idx] = { ...localMockStructure[idx], ...updatedData };
+                    } else if (rowNum !== '' && !isNaN(rowNum) && localMockStructure[rowNum]) {
+                        localMockStructure[rowNum] = { ...localMockStructure[rowNum], ...updatedData };
+                    }
+                    saveLocalMockStructure();
+
+                    alert("បានកែប្រែទិន្នន័យដោយជោគជ័យ! (Local Mock)");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    closeModal('modal-edit-structure');
+                    loadAdminStructure();
+                }, 400);
+            }
+        }
+
+        function deleteAdminStructure(rowNum) {
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(success) {
+                    if (success) loadAdminStructure();
+                    else alert("មានបញ្ហាក្នុងការលុប!");
+                }).deleteStructureRow(rowNum);
+            }
+        }
+
+        // =======================
+        // News Management Logic
+        // =======================
+        function getLocalMockNews() {
+            try {
+                const stored = localStorage.getItem('mockNews');
+                if(stored) return JSON.parse(stored);
+            } catch(e) {}
+            return [
+                { title: 'ពិធីបើកបវេសនកាលឆ្នាំសិក្សាថ្មី ២០២៤-២០២៥', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800', date: '01/10/2024', content: 'សាលានឹងរៀបចំពិធីបើកបវេសនកាលឆ្នាំសិក្សាថ្មីនៅថ្ងៃទី ០១ ខែតុលា ឆ្នាំ២០២៤។', rowNum: 2 },
+                { title: 'ការប្រកួតកីឡាអន្តរសាលាប្រចាំឆ្នាំ', image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800', date: '15/11/2024', content: 'អបអរសាទរក្រុមបាល់ទាត់សាលាយើងដែលបានទទួលចំណាត់ថ្នាក់លេខ១ ក្នុងការប្រកួតកីឡាអន្តរសាលាប្រចាំខេត្ត។', rowNum: 3 }
+            ];
+        }
+
+        let localMockNews = getLocalMockNews();
+
+        function saveLocalMockNews() {
+            try {
+                localStorage.setItem('mockNews', JSON.stringify(localMockNews));
+            } catch(e) {}
+        }
+
+        function loadAdminNews() {
+            const tbody = document.getElementById('admin-news-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>';
+            
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(news) {
+                    if (!news || news.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">មិនមានទិន្នន័យព័ត៌មានទេ</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = news.map(n => `
+                        <tr>
+                            <td><img src="${getDriveImageUrl(n.image)}" referrerpolicy="no-referrer" loading="lazy" style="width:60px; height:40px; object-fit:cover; border-radius:4px;" onerror="handleImageFallback(this, 'News')"></td>
+                            <td>${n.date}</td>
+                            <td>${n.title}</td>
+                            <td class="action-icons">
+                                <i class="fas fa-edit" title="កែប្រែ"></i>
+                                <i class="fas fa-trash" style="color:var(--danger)" title="លុប" onclick="if(confirm('តើអ្នកពិតជាចង់លុបព័ត៌មាននេះមែនទេ?')) deleteAdminNews(${n.rowNum})"></i>
+                            </td>
+                        </tr>
+                    `).join('');
+                }).getNewsAndEvents();
+            } else {
+                // Local mock
+                setTimeout(() => {
+                    if(localMockNews.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">មិនមានទិន្នន័យព័ត៌មានទេ</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = localMockNews.map((n, idx) => `
+                        <tr>
+                            <td><img src="${getDriveImageUrl(n.image)}" referrerpolicy="no-referrer" loading="lazy" style="width:60px; height:40px; object-fit:cover; border-radius:4px;" onerror="handleImageFallback(this, 'News')"></td>
+                            <td>${n.date}</td>
+                            <td>${n.title}</td>
+                            <td class="action-icons">
+                                <i class="fas fa-edit"></i>
+                                <i class="fas fa-trash" style="color:var(--danger)" onclick="localMockNews.splice(${idx}, 1); saveLocalMockNews(); loadAdminNews();"></i>
+                            </td>
+                        </tr>
+                    `).join('');
+                }, 500);
+            }
+        }
+
+        function saveNewNews(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> បង្ហោះ...';
+            btn.disabled = true;
+
+            const today = new Date();
+            const dateString = today.toLocaleDateString('en-GB'); // dd/mm/yyyy
+
+            const newsData = {
+                title: document.getElementById('newsTitleInput').value,
+                image: document.getElementById('newsUrlInput').value,
+                content: document.getElementById('newsContentInput').value,
+                date: dateString
+            };
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(success) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    if(success) {
+                        alert("បានបង្ហោះព័ត៌មានថ្មីដោយជោគជ័យ!");
+                        closeModal('modal-add-news');
+                        document.getElementById('addNewsForm').reset();
+                        loadAdminNews();
+                    } else {
+                        alert("មានបញ្ហាក្នុងការបង្ហោះព័ត៌មាន!");
+                    }
+                }).addNews(newsData);
+            } else {
+                // Local fallback
+                setTimeout(() => {
+                    localMockNews.push({
+                        title: newsData.title,
+                        image: newsData.image,
+                        date: newsData.date,
+                        content: newsData.content,
+                        rowNum: Date.now()
+                    });
+                    saveLocalMockNews();
+                    alert("បានបង្ហោះព័ត៌មានថ្មីដោយជោគជ័យ! (Local Mock)");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    closeModal('modal-add-news');
+                    document.getElementById('addNewsForm').reset();
+                    loadAdminNews();
+                }, 500);
+            }
+        }
+
+        function deleteAdminNews(rowNum) {
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(success) {
+                    if(success) loadAdminNews();
+                    else alert("មានបញ្ហាក្នុងការលុបព័ត៌មាន!");
+                }).deleteNewsRow(rowNum);
+            }
+        }
+
+        // =======================
+        // Video/Lesson Management Logic
+        // =======================
+        let localMockVideos = JSON.parse(localStorage.getItem('mockVideos')) || [
+            { subject: 'រូបវិទ្យា', title: 'ចលនាត្រង់ស្មើ', teacher: 'លោកគ្រូ ក', link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+        ];
+
+        function saveLocalMockVideos() {
+            localStorage.setItem('mockVideos', JSON.stringify(localMockVideos));
+            const statMember = document.getElementById('stat-member');
+            if (statMember) statMember.innerText = localMockVideos.length;
+            if (typeof initChart === 'function') initChart();
+        }
+
+        function loadAdminVideos() {
+            const tbody = document.getElementById('video-table-body');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>';
+            
+            setTimeout(() => {
+                if (localMockVideos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">មិនមានទិន្នន័យទេ</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = localMockVideos.map((vid, idx) => `
+                    <tr>
+                        <td>${vid.subject}</td>
+                        <td>${vid.title}</td>
+                        <td>${vid.teacher}</td>
+                        <td class="action-icons">
+                            <i class="fas fa-trash" style="color:var(--danger)" title="លុប" onclick="if(confirm('តើអ្នកពិតជាចង់លុបមេរៀននេះមែនទេ?')) { localMockVideos.splice(${idx}, 1); saveLocalMockVideos(); loadAdminVideos(); }"></i>
+                        </td>
+                    </tr>
+                `).join('');
+            }, 300);
+        }
+
+        function saveNewVideo(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> រក្សាទុក...';
+            btn.disabled = true;
+
+            const videoData = {
+                subject: document.getElementById('videoSubjectInput').value,
+                title: document.getElementById('videoTitleInput').value,
+                teacher: document.getElementById('videoTeacherInput').value,
+                link: document.getElementById('videoLinkInput').value
+            };
+
+            setTimeout(() => {
+                localMockVideos.push(videoData);
+                saveLocalMockVideos();
+                alert("បានបន្ថែមមេរៀនថ្មីដោយជោគជ័យ!");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                closeModal('modal-add-lesson');
+                document.getElementById('addVideoForm').reset();
+                loadAdminVideos();
+            }, 300);
+        }
+
+        // =======================
+        // Slide Management Logic
+        // =======================
+        let localMockSlides = JSON.parse(localStorage.getItem('mockSlides')) || [
+            { title: 'ស្វាគមន៍ឆ្នាំសិក្សាថ្មី', image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1920&h=600&fit=crop', target: '' },
+            { title: 'ទិដ្ឋភាពទូទៅនៃសាលា', image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1920&h=600&fit=crop', target: '' },
+            { title: 'ការអប់រំប្រកបដោយគុណភាព', image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920&h=600&fit=crop', target: '' }
+        ];
+
+        function saveLocalMockSlides() {
+            localStorage.setItem('mockSlides', JSON.stringify(localMockSlides));
+        }
+
+        function loadAdminSlides() {
+            const tbody = document.getElementById('slide-table-body');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>';
+            
+            setTimeout(() => {
+                if (localMockSlides.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">មិនមានទិន្នន័យទេ</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = localMockSlides.map((slide, idx) => `
+                    <tr>
+                        <td>
+                            <div style="width:100px; height:60px; border-radius:6px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.1); background:#f1f5f9; display:flex; align-items:center; justify-content:center;">
+                                <img src="${getDriveImageUrl(slide.image)}" referrerpolicy="no-referrer" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="handleImageFallback(this, 'Slide')">
+                            </div>
+                        </td>
+                        <td><strong>${slide.title}</strong></td>
+                        <td><a href="${slide.target}" target="_blank" style="color:var(--primary); font-weight:500;">${slide.target ? 'បើកតំណ' : '-'}</a></td>
+                        <td class="action-icons">
+                            <i class="fas fa-trash" style="color:var(--danger); cursor:pointer;" title="លុប" onclick="if(confirm('តើអ្នកពិតជាចង់លុបស្លាយនេះមែនទេ?')) { localMockSlides.splice(${idx}, 1); saveLocalMockSlides(); loadAdminSlides(); }"></i>
+                        </td>
+                    </tr>
+                `).join('');
+            }, 300);
+        }
+
+        function saveNewSlide(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> រក្សាទុក...';
+            btn.disabled = true;
+
+            const slideData = {
+                title: document.getElementById('slideTitleInput').value,
+                image: document.getElementById('slideImageInput').value,
+                target: document.getElementById('slideTargetInput').value
+            };
+
+            setTimeout(() => {
+                localMockSlides.push(slideData);
+                saveLocalMockSlides();
+                alert("បានបន្ថែមស្លាយថ្មីដោយជោគជ័យ!");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                closeModal('modal-add-slide');
+                document.getElementById('addSlideForm').reset();
+                loadAdminSlides();
+            }, 300);
+        }
+
+        // =======================
+        // Gallery Management Logic
+        // =======================
+        let localMockGallery = JSON.parse(localStorage.getItem('mockGallery')) || [
+            { title: 'ទិវាគ្រូបង្រៀន', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800', date: '2026-10-05' },
+            { title: 'ពិធីចែកសញ្ញាបត្រ', image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800', date: '2026-08-10' }
+        ];
+
+        function saveLocalMockGallery() {
+            localStorage.setItem('mockGallery', JSON.stringify(localMockGallery));
+        }
+
+        function loadAdminGallery() {
+            const tbody = document.getElementById('gallery-table-body');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>';
+            
+            setTimeout(() => {
+                if (localMockGallery.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">មិនមានទិន្នន័យទេ</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = localMockGallery.map((img, idx) => `
+                    <tr>
+                        <td><img src="${getDriveImageUrl(img.image)}" referrerpolicy="no-referrer" loading="lazy" style="width:80px; height:50px; border-radius:4px; object-fit:cover;" onerror="handleImageFallback(this, 'Gallery')"></td>
+                        <td>${img.title}</td>
+                        <td>${img.date}</td>
+                        <td class="action-icons">
+                            <i class="fas fa-trash" style="color:var(--danger)" title="លុប" onclick="if(confirm('តើអ្នកពិតជាចង់លុបរូបភាពនេះមែនទេ?')) { localMockGallery.splice(${idx}, 1); saveLocalMockGallery(); loadAdminGallery(); }"></i>
+                        </td>
+                    </tr>
+                `).join('');
+            }, 300);
+        }
+
+        function saveNewGallery(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> រក្សាទុក...';
+            btn.disabled = true;
+
+            const galleryData = {
+                title: document.getElementById('galleryTitleInput').value,
+                image: document.getElementById('galleryImageInput').value,
+                date: document.getElementById('galleryDateInput').value
+            };
+
+            setTimeout(() => {
+                localMockGallery.push(galleryData);
+                saveLocalMockGallery();
+                alert("បានបន្ថែមរូបភាពថ្មីដោយជោគជ័យ!");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                closeModal('modal-add-gallery');
+                document.getElementById('addGalleryForm').reset();
+                loadAdminGallery();
+            }, 300);
+        }
+
+        function saveSettings() {
+            const settingsData = {
+                name: document.getElementById('settingSchoolName') ? document.getElementById('settingSchoolName').value : '',
+                mapUrl: document.getElementById('settingMapUrl') ? document.getElementById('settingMapUrl').value : '',
+                vision: document.getElementById('settingVision') ? document.getElementById('settingVision').value : '',
+                mission: document.getElementById('settingMission') ? document.getElementById('settingMission').value : '',
+                values: document.getElementById('settingValues') ? document.getElementById('settingValues').value : '',
+                historyP1: document.getElementById('settingHistoryP1') ? document.getElementById('settingHistoryP1').value : '',
+                historyP2: document.getElementById('settingHistoryP2') ? document.getElementById('settingHistoryP2').value : '',
+                historyImage: document.getElementById('settingHistoryImage') ? document.getElementById('settingHistoryImage').value : ''
+            };
+
+            const msgs = document.querySelectorAll('#save-setting-msg, #save-setting-msg-vm, #save-setting-msg-history');
+            msgs.forEach(msg => {
+                msg.innerText = "កំពុងរក្សាទុក...";
+                msg.style.display = 'inline';
+                msg.style.color = 'var(--text-muted)';
+            });
+
+            try {
+                localStorage.setItem('schoolSettings', JSON.stringify(settingsData));
+            } catch(e) {}
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(success) {
+                    msgs.forEach(msg => {
+                        if(success) {
+                            msg.innerText = "បានរក្សាទុកជោគជ័យ!";
+                            msg.style.color = 'var(--success)';
+                            setTimeout(() => msg.style.display = 'none', 3000);
+                        } else {
+                            msg.innerText = "បរាជ័យ!";
+                            msg.style.color = 'var(--danger)';
+                        }
+                    });
+                }).saveSchoolSettings(settingsData);
+            } else {
+                setTimeout(() => {
+                    msgs.forEach(msg => {
+                        msg.innerText = "បានរក្សាទុកជោគជ័យ!";
+                        msg.style.color = 'var(--success)';
+                        setTimeout(() => msg.style.display = 'none', 3000);
+                    });
+                }, 300);
+            }
+        }
+
+
+        // ==================== CATEGORIES MANAGEMENT ====================
+        const defaultCategories = [
+            "សៀវភៅសិក្សាគោល",
+            "សៀវភៅកិច្ចតែងការបង្រៀន",
+            "សៀវភៅចំណេះដឹងទូទៅ",
+            "ស្រាវជ្រាវ",
+            "សៀវភៅបច្ចេកវិទ្យា",
+            "សៀវភៅវិធីសាស្ត្របង្រៀន",
+            "ផ្សេងៗ"
+        ];
+        let localCategories = [...defaultCategories];
+        try {
+            const storedCats = localStorage.getItem('bookCategories');
+            if (storedCats) localCategories = JSON.parse(storedCats);
+        } catch(e) {}
+
+        function saveLocalCategories() {
+            try {
+                localStorage.setItem('bookCategories', JSON.stringify(localCategories));
+            } catch(e) {}
+            populateCategoryDropdowns();
+        }
+
+        function populateCategoryDropdowns() {
+            const bookCatSelect = document.getElementById('bookCategoryInput');
+            if (bookCatSelect) {
+                const currentVal = bookCatSelect.value;
+                bookCatSelect.innerHTML = '<option value="">ជ្រើសរើសប្រភេទ...</option>' + 
+                    localCategories.map(c => `<option value="${c}">${c}</option>`).join('');
+                if (currentVal && localCategories.includes(currentVal)) {
+                    bookCatSelect.value = currentVal;
+                }
+            }
+        }
+
+        function openCategoryModal() {
+            renderCategoryTable();
+            openModal('modal-manage-categories');
+        }
+
+        function renderCategoryTable() {
+            const tbody = document.getElementById('category-table-body');
+            if (!tbody) return;
+            if (localCategories.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">មិនទាន់មានប្រភេទនៅឡើយទេ</td></tr>';
+                return;
+            }
+            tbody.innerHTML = localCategories.map((cat, idx) => {
+                const count = (typeof localMockBooks !== 'undefined' && Array.isArray(localMockBooks)) 
+                    ? localMockBooks.filter(b => b.category === cat).length 
+                    : 0;
+                return `
+                    <tr>
+                        <td style="font-weight: 500;">${cat}</td>
+                        <td><span class="badge" style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:12px; font-size:0.8rem;">${count} សៀវភៅ</span></td>
+                        <td class="action-icons">
+                            <i class="fas fa-trash" style="color:var(--danger);" title="លុប" onclick="deleteCategory('${cat.replace(/'/g, "\\'")}')"></i>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function saveNewCategory(event) {
+            event.preventDefault();
+            const input = document.getElementById('newCategoryInput');
+            const newCat = input.value.trim();
+            if (!newCat) return;
+            if (localCategories.includes(newCat)) {
+                alert('ប្រភេទនេះមានរួចហើយ! (This category already exists)');
+                return;
+            }
+            localCategories.push(newCat);
+            saveLocalCategories();
+            input.value = '';
+            renderCategoryTable();
+        }
+
+        function deleteCategory(catName) {
+            const count = (typeof localMockBooks !== 'undefined' && Array.isArray(localMockBooks)) 
+                ? localMockBooks.filter(b => b.category === catName).length 
+                : 0;
+            let confirmMsg = `តើអ្នកពិតជាចង់លុបប្រភេទ "${catName}" មែនទេ?`;
+            if (count > 0) {
+                confirmMsg = `ប្រភេទ "${catName}" មានសៀវភៅចំនួន ${count} ក្បាល។ តើអ្នកពិតជាចង់លុបមែនទេ?`;
+            }
+            if (confirm(confirmMsg)) {
+                localCategories = localCategories.filter(c => c !== catName);
+                saveLocalCategories();
+                renderCategoryTable();
+            }
+        }
+
+        // ==================== MESSAGES MANAGEMENT ====================
+        const defaultMessages = [
+            {
+                id: 'MSG-001',
+                sender: 'សិស្ស គឹមហុង',
+                contact: '012 345 678 / kimhong@gmail.com',
+                subject: 'សុំច្បាប់ឈប់សម្រាក',
+                message: 'ជម្រាបសួរលោកគ្រូ/អ្នកគ្រូ ខ្ញុំបាទឈ្មោះ គឹមហុង សូមការអនុញ្ញាតច្បាប់ឈប់សម្រាកចំនួន ២ ថ្ងៃ ដោយសារមានធុរៈចាំបាច់ក្នុងគ្រួសារ។ សូមអរគុណ!',
+                date: '31/07/2026',
+                status: 'read'
+            },
+            {
+                id: 'MSG-002',
+                sender: 'គរុសិស្ស សុខា ចិន្តា',
+                contact: '098 765 432 / chenda.sokha@yahoo.com',
+                subject: 'សំណើសុំឯកសារស្រាវជ្រាវគរុកោសល្យ',
+                message: 'ជម្រាបសួរគណៈគ្រប់គ្រងសាលា នាងខ្ញុំចង់ស្នើសុំទាញយកឯកសារស្រាវជ្រាវស្តីពីវិធីសាស្ត្របង្រៀនថ្មីៗសម្រាប់ថ្នាក់ទី១២+៤។ សូមអរគុណ!',
+                date: '02/08/2026',
+                status: 'unread'
+            },
+            {
+                id: 'MSG-003',
+                sender: 'លោកគ្រូ រ័ត្ន វិបុល',
+                contact: '077 112 233 / vibol.roth@gmail.com',
+                subject: 'ព័ត៌មានអំពីការប្រជុំបច្ចេកទេស',
+                message: 'សូមជម្រាបជូនគណៈគ្រប់គ្រងថា នៅថ្ងៃសុក្រនេះ ក្រុមបច្ចេកទេសនឹងរៀបចំការប្រជុំពិភាក្សាលើការកែលម្អកិច្ចតែងការបង្រៀន។',
+                date: '03/08/2026',
+                status: 'unread'
+            }
+        ];
+
+        let localMockMessages = [...defaultMessages];
+        try {
+            const storedMsgs = localStorage.getItem('mockMessages');
+            if (storedMsgs) localMockMessages = JSON.parse(storedMsgs);
+        } catch(e) {}
+
+        let currentlyViewedMessageIndex = -1;
+
+        function saveLocalMockMessages() {
+            try {
+                localStorage.setItem('mockMessages', JSON.stringify(localMockMessages));
+            } catch(e) {}
+            updateMessageBadges();
+            renderDashboardRecentMessages();
+            if (typeof initChart === 'function') initChart();
+        }
+
+        function updateMessageBadges() {
+            try {
+                const storedMsgs = localStorage.getItem('mockMessages');
+                if (storedMsgs) localMockMessages = JSON.parse(storedMsgs);
+            } catch(e) {}
+
+            const incomingMsgs = localMockMessages.filter(m => !m.isOutbound && !(m.id && m.id.startsWith('MSG-OUT-')));
+            const unreadCount = incomingMsgs.filter(m => m.status === 'unread').length;
+            const msgStatCard = document.querySelector('#view-dashboard .stat-card:nth-child(3) h2');
+            if (msgStatCard) {
+                msgStatCard.innerText = localMockMessages.length;
+            }
+            const notifBadges = document.querySelectorAll('.notification-badge, .nav-badge');
+            notifBadges.forEach(b => {
+                if (unreadCount > 0) {
+                    b.innerText = unreadCount;
+                    b.style.display = 'inline-block';
+                } else {
+                    b.style.display = 'none';
+                }
+            });
+
+            renderNotificationDropdownItems();
+        }
+
+        function renderNotificationDropdownItems() {
+            const container = document.getElementById('notificationDropdownItems');
+            if (!container) return;
+            try {
+                const allMsgs = JSON.parse(localStorage.getItem('mockMessages') || '[]');
+                const incomingMsgs = allMsgs.filter(m => !m.isOutbound && !(m.id && m.id.startsWith('MSG-OUT-')));
+                const unreadMsgs = incomingMsgs.filter(m => m.status === 'unread');
+                const displayMsgs = unreadMsgs.length > 0 ? unreadMsgs : incomingMsgs.slice(0, 5);
+
+                if (displayMsgs.length === 0) {
+                    container.innerHTML = '<div style="padding: 15px 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">គ្មានសារថ្មីទេ</div>';
+                    return;
+                }
+
+                container.innerHTML = displayMsgs.map((m) => {
+                    const originalIdx = allMsgs.findIndex(orig => orig === m || (orig.id && orig.id === m.id));
+                    const sender = m.sender || m.name || 'អនាមិក';
+                    const subject = m.subject || 'គ្មានប្រធានបទ';
+                    const visitorBadge = m.fromVisitor 
+                        ? '<span style="background:#dbeafe; color:#1d4ed8; font-size:0.65rem; padding:1px 5px; border-radius:6px; margin-left:5px; font-weight:600;"><i class="fas fa-globe" style="font-size:0.6rem;"></i> ពីអ្នកចូលមើល</span>' 
+                        : '';
+                    const isUnread = m.status === 'unread';
+
+                    return `
+                        <div class="profile-dropdown-item" onclick="event.stopPropagation(); viewAdminMessage(${originalIdx !== -1 ? originalIdx : 0}); toggleNotificationDropdown();" style="flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 20px; border-bottom: 1px solid var(--border-color); cursor: pointer; ${isUnread ? 'background: rgba(13,110,253,0.04);' : ''}">
+                            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                <strong style="color: var(--text-main); font-size: 0.88rem; display: flex; align-items: center;">
+                                    ${isUnread ? '<i class="fas fa-circle" style="color: var(--danger); font-size: 0.5rem; margin-right: 6px;"></i>' : ''}
+                                    សារថ្មីពី ${sender}${visitorBadge}
+                                </strong>
+                                <small style="color: var(--text-muted); font-size: 0.75rem;">${(m.date || '').split(' ')[0]}</small>
+                            </div>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 230px;">${subject}</span>
+                        </div>`;
+                }).join('');
+            } catch(e) {
+                container.innerHTML = '<div style="padding: 15px 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">គ្មានសារថ្មីទេ</div>';
+            }
+        }
+
+        function loadAdminMessages() {
+            const tbody = document.getElementById('messages-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">កំពុងទាញយកទិន្នន័យ...</td></tr>';
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(function(messages) {
+                    if (!messages || messages.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">មិនមានសារទេ</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = messages.map((m, idx) => `
+                        <tr>
+                            <td>${m.date || 'មិនបញ្ជាក់'}</td>
+                            <td><strong>${m.name || 'អនាមិក'}</strong><br><small style="color:var(--text-muted);">${m.contact || ''}</small></td>
+                            <td>${m.subject || 'គ្មានប្រធានបទ'}</td>
+                            <td><span style="color:var(--success); font-weight:600;"><i class="fas fa-check-circle"></i> ចូលមក</span></td>
+                            <td class="action-icons">
+                                <i class="fas fa-eye" title="អានសារ" onclick="viewSheetMessage(${JSON.stringify(m).replace(/"/g, '&quot;')})"></i>
+                            </td>
+                        </tr>
+                    `).join('');
+                }).getMessages();
+            } else {
+                // Reload from localStorage each time (picks up new visitor messages)
+                try {
+                    const storedMsgs = localStorage.getItem('mockMessages');
+                    if (storedMsgs) localMockMessages = JSON.parse(storedMsgs);
+                } catch(e) {}
+
+                setTimeout(() => {
+                    if (localMockMessages.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">មិនមានសារទេ</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = localMockMessages.map((m, idx) => `
+                        <tr style="${m.status === 'unread' ? 'background:rgba(13,110,253,0.03); font-weight:500;' : ''}">
+                            <td>${m.date}</td>
+                            <td>
+                                <strong>${m.sender}</strong>
+                                ${m.fromVisitor ? '<span style="display:inline-block; background:#dbeafe; color:#1d4ed8; font-size:0.7rem; padding:2px 6px; border-radius:8px; margin-left:4px; font-weight:600;"><i class="fas fa-globe" style="margin-right:2px;"></i>ពីអ្នកចូលមើល</span>' : ''}
+                                <br><small style="color:var(--text-muted);">${m.contact}</small>
+                            </td>
+                            <td>${m.subject}</td>
+                            <td>
+                                ${m.status === 'unread' 
+                                    ? '<span class="badge" style="background:#fee2e2; color:#b91c1c; padding:4px 8px; border-radius:12px; font-size:0.8rem;"><i class="fas fa-circle" style="font-size:0.5rem; margin-right:4px;"></i>មិនទាន់អាន</span>' 
+                                    : '<span class="badge" style="background:#dcfce7; color:#15803d; padding:4px 8px; border-radius:12px; font-size:0.8rem;"><i class="fas fa-check-double" style="margin-right:4px;"></i>បានអាន</span>'
+                                }
+                            </td>
+                            <td class="action-icons">
+                                <i class="fas fa-eye" style="color:var(--primary);" title="អានសារ" onclick="viewAdminMessage(${idx})"></i>
+                                <i class="fas fa-trash" style="color:var(--danger);" title="លុប" onclick="deleteAdminMessage(${idx})"></i>
+                            </td>
+                        </tr>
+                    `).join('');
+                }, 300);
+            }
+        }
+
+
+        function viewAdminMessage(idx) {
+            const msg = localMockMessages[idx];
+            if (!msg) return;
+            currentlyViewedMessageIndex = idx;
+            
+            // Mark as read
+            if (msg.status === 'unread') {
+                msg.status = 'read';
+                saveLocalMockMessages();
+                loadAdminMessages();
+            }
+
+            document.getElementById('viewMsgSender').innerText = msg.sender;
+            document.getElementById('viewMsgContact').innerText = msg.contact;
+            document.getElementById('viewMsgDate').innerText = msg.date;
+            document.getElementById('viewMsgSubject').innerText = msg.subject;
+            document.getElementById('viewMsgContent').innerText = msg.message;
+
+            openModal('modal-view-message');
+        }
+
+        function viewSheetMessage(msg) {
+            document.getElementById('viewMsgSender').innerText = msg.name || 'អនាមិក';
+            document.getElementById('viewMsgContact').innerText = msg.contact || '';
+            document.getElementById('viewMsgDate').innerText = msg.date || '';
+            document.getElementById('viewMsgSubject').innerText = msg.subject || 'គ្មានប្រធានបទ';
+            document.getElementById('viewMsgContent').innerText = msg.message || '';
+            currentlyViewedMessageIndex = -1;
+            openModal('modal-view-message');
+        }
+
+        function deleteCurrentViewedMessage() {
+            if (currentlyViewedMessageIndex >= 0) {
+                if (confirm('តើអ្នកពិតជាចង់លុបសារនេះមែនទេ?')) {
+                    localMockMessages.splice(currentlyViewedMessageIndex, 1);
+                    saveLocalMockMessages();
+                    closeModal('modal-view-message');
+                    loadAdminMessages();
+                }
+            } else {
+                closeModal('modal-view-message');
+            }
+        }
+
+        function replyCurrentMessage() {
+            if (currentlyViewedMessageIndex >= 0) {
+                const msg = localMockMessages[currentlyViewedMessageIndex];
+                closeModal('modal-view-message');
+                openModal('modal-send-message');
+                document.getElementById('msgRecipientInput').value = msg.contact || msg.sender;
+                document.getElementById('msgSubjectInput').value = 'Re: ' + msg.subject;
+                document.getElementById('msgContentInput').focus();
+            }
+        }
+
+        function deleteAdminMessage(idx) {
+            if (confirm('តើអ្នកពិតជាចង់លុបសារនេះមែនទេ?')) {
+                localMockMessages.splice(idx, 1);
+                saveLocalMockMessages();
+                loadAdminMessages();
+            }
+        }
+
+        function sendAdminMessage(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btn-send-message');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> កំពុងផ្ញើ...';
+            btn.disabled = true;
+
+            const recipient = document.getElementById('msgRecipientInput').value;
+            const subject = document.getElementById('msgSubjectInput').value;
+            const content = document.getElementById('msgContentInput').value;
+
+            const today = new Date();
+            const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth()+1).padStart(2, '0')}/${today.getFullYear()}`;
+
+            const newOutMsg = {
+                id: 'MSG-OUT-' + Date.now(),
+                sender: 'ខ្ញុំបាទ/នាងខ្ញុំ (Admin) -> ' + recipient,
+                contact: recipient,
+                subject: subject,
+                message: content,
+                date: dateStr,
+                status: 'read',
+                isOutbound: true
+            };
+
+            setTimeout(() => {
+                localMockMessages.unshift(newOutMsg);
+                saveLocalMockMessages();
+                alert("សារត្រូវបានផ្ញើដោយជោគជ័យ! (Message sent successfully!)");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                closeModal('modal-send-message');
+                document.getElementById('sendMessageForm').reset();
+                loadAdminMessages();
+            }, 500);
+        }
+
+        window.onload = function() {
+            initChart();
+            renderCalendar();
+            loadDashboardStats();
+            loadSettings();
+            loadAdminProfile();
+            populateCategoryDropdowns();
+            updateMessageBadges();
+        }
+
+        function adminLogout() {
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('login-message').style.display = 'none';
+            document.getElementById('admin-layout').style.display = 'none';
+            document.getElementById('login-view').style.display = 'flex';
+        }
+
+        function openModal(modalId, isEdit = false) { 
+            const modal = document.getElementById(modalId);
+            const title = modal.querySelector('.modal-header h3');
+            
+            if (title) {
+                if (!title.dataset.original) title.dataset.original = title.innerText;
+                if (isEdit) {
+                    title.innerText = title.dataset.original.replace('បន្ថែម', 'កែប្រែ').replace('ថ្មី', '').replace('ផ្ញើ', 'អាន');
+                } else {
+                    title.innerText = title.dataset.original;
+                }
+            }
+
+            if(modalId === 'modal-add-book' && !isEdit) {
+                const randomCode = 'B-' + Math.floor(1000 + Math.random() * 9000);
+                document.getElementById('bookCodeInput').value = randomCode;
+            }
+            modal.style.display = 'flex'; 
+        }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.style.display = "none"; }
+
+        // Global Event Listener for Edit actions
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('fa-edit')) {
+                const viewSection = e.target.closest('.view-section');
+                if(!viewSection) return;
+                
+                let modalId = '';
+                if (viewSection.id === 'view-library') modalId = 'modal-add-book';
+                else if (viewSection.id === 'view-news') modalId = 'modal-add-news';
+                else if (viewSection.id === 'view-lessons') modalId = 'modal-add-lesson';
+                else if (viewSection.id === 'view-messages') modalId = 'modal-send-message';
+                else if (viewSection.id === 'view-slides') modalId = 'modal-add-slide';
+                else if (viewSection.id === 'view-structure') modalId = 'modal-add-structure';
+                else if (viewSection.id === 'view-gallery') modalId = 'modal-add-gallery';
+                
+                if (modalId) {
+                    openModal(modalId, true);
+                    if (modalId === 'modal-add-book') {
+                        const code = e.target.closest('tr').children[1].innerText;
+                        document.getElementById('bookCodeInput').value = code;
+                    }
+                }
+            }
+        });
+
+        function toggleProfileDropdown(event) {
+            if(event) event.stopPropagation();
+            const dropdown = document.getElementById('profileDropdown');
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if(notifDropdown && notifDropdown.classList.contains('show')) notifDropdown.classList.remove('show');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleNotificationDropdown(event) {
+            if(event) event.stopPropagation();
+            const notifDropdown = document.getElementById('notificationDropdown');
+            const profileDropdown = document.getElementById('profileDropdown');
+            if(profileDropdown && profileDropdown.classList.contains('show')) profileDropdown.classList.remove('show');
+            notifDropdown.classList.toggle('show');
+        }
+        
+        window.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('profileDropdown');
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if (dropdown && dropdown.classList.contains('show')) dropdown.classList.remove('show');
+            if (notifDropdown && notifDropdown.classList.contains('show')) notifDropdown.classList.remove('show');
+        });
+
+        const translations = {
+            kh: {
+                "dashboard": "ផ្ទាំងដើម",
+                "library": "គ្រប់គ្រងបណ្ណាល័យ",
+                "news": "គ្រប់គ្រងព័ត៌មាន",
+                "lessons": "គ្រប់គ្រងមេរៀន",
+                "messages": "គ្រប់គ្រងការផ្ញើសារ",
+                "slides": "គ្រប់គ្រងស្លាយផ្សព្វផ្សាយ",
+                "structure": "គ្រប់គ្រងរចនាសម្ព័ន្ធថ្នាក់សាលា",
+                "gallery": "គ្រប់គ្រងរូបភាព",
+                "settings": "ការកំណត់",
+                "logout": "ចាកចេញ",
+                "admin_title": "ផ្ទាំងគ្រប់គ្រង"
+            },
+            en: {
+                "dashboard": "Dashboard",
+                "library": "Library",
+                "news": "News",
+                "lessons": "Lessons",
+                "messages": "Messages",
+                "slides": "Slides",
+                "structure": "Structure",
+                "gallery": "Gallery",
+                "settings": "Settings",
+                "logout": "Logout",
+                "admin_title": "Dashboard Menu"
+            }
+        };
+
+        let currentLang = 'kh';
+        function toggleLanguage() {
+            currentLang = currentLang === 'kh' ? 'en' : 'kh';
+            
+            const langSwitch = document.getElementById('langSwitch');
+            if (currentLang === 'kh') {
+                langSwitch.innerHTML = '<span class="active"><img src="https://flagcdn.com/w20/kh.png" style="width: 15px; margin-right: 5px; vertical-align: middle;"></span><span>ENG</span>';
+            } else {
+                langSwitch.innerHTML = '<span>KH</span><span class="active">ENG</span>';
+            }
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    el.innerText = translations[currentLang][key];
+                }
+            });
+        }
+
+        function getRealChartData() {
+            let visitorCount = 0;
+            try { visitorCount = parseInt(localStorage.getItem('visitorCount') || '0', 10); } catch(e) {}
+
+            let booksCount = 0;
+            try { booksCount = (JSON.parse(localStorage.getItem('mockBooks') || '[]')).length; } catch(e) {}
+
+            let messagesCount = 0;
+            try {
+                const allMsgs = JSON.parse(localStorage.getItem('mockMessages') || '[]');
+                messagesCount = allMsgs.filter(m => !m.isOutbound && !(m.id && m.id.startsWith('MSG-OUT-'))).length;
+            } catch(e) {}
+
+            let videosCount = 0;
+            try { videosCount = (JSON.parse(localStorage.getItem('mockVideos') || '[]')).length; } catch(e) {}
+
+            return [visitorCount, booksCount, messagesCount, videosCount];
+        }
+
+        let myChart = null;
+        function initChart() {
+            const canvas = document.getElementById('statsChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(13, 110, 253, 0.35)');
+            gradient.addColorStop(1, 'rgba(13, 110, 253, 0.0)');
+            
+            const realData = getRealChartData();
+            const maxVal = Math.max(...realData, 5);
+            const yMax = Math.ceil(maxVal * 1.25);
+
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['អ្នកចូលមើល', 'សៀវភៅ', 'សារបញ្ញើចូល', 'មេរៀនវីដេអូ'],
+                    datasets: [{ label: 'ចំនួនសរុប', data: realData, borderColor: '#0d6efd', backgroundColor: gradient, borderWidth: 2.5, pointBackgroundColor: '#fff', pointBorderColor: '#0d6efd', pointBorderWidth: 2, pointRadius: 5, pointHoverRadius: 7, fill: true, tension: 0.4 }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ចំនួន៖ ${context.raw}`;
+                                }
+                            }
+                        }
+                    }, 
+                    scales: { 
+                        y: { beginAtZero: true, max: yMax, grid: { color: 'rgba(0,0,0,0.05)' }, border: { display: false } }, 
+                        x: { grid: { display: false }, border: { display: false } } 
+                    } 
+                }
+            });
+        }
+
+        function renderCalendar() {
+            const cal = document.getElementById('calendar-days');
+            let html = '';
+            for(let i=0; i<3; i++) html += '<div></div>';
+            for(let i=1; i<=28; i++) {
+                let cls = 'cal-day';
+                if(i===6) cls += ' active';
+                if(i===24 || i===27) cls += ' event1';
+                html += `<div class="${cls}">${i}</div>`;
+            }
+            html += '<div class="cal-day">29</div><div class="cal-day active">30</div>';
+            cal.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
