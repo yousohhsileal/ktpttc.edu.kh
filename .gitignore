@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Environment variables & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Operating System Files (macOS / Windows)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Temporary / Test Files
+test.html
+test_html.html
+test.js
+test2.js
+test_add_book.js
+test.py
+test_drive.py
+test_image_endpoints.py
+test_image_redirects.py
+scratch/
+
+# Editor & IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
